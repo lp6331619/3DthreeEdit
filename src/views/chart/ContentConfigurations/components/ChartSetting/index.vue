@@ -17,7 +17,7 @@
     <!-- 滤镜 -->
     <!-- <styles-setting :isGroup="targetData.isGroup" :chartStyles="targetData.styles"></styles-setting> -->
     <!-- 自定义配置项 -->
-    <component :is="targetData.chartConfig.conKey" :optionData="targetData.option"></component>
+    <component :is="targetData.chartConfig.conKey" :optionData="targetData.option" :childrenData="targetData.children||[]"></component>
   </div>
 </template>
 

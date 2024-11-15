@@ -22,6 +22,7 @@
         v-if="subMesh.type == 'TresMesh'"
         ref="TresMeshRef"
         v-bind="subMesh.option"
+        :width="4" :height="4" :depth="1"
         cast-shadow 
         :name="subMesh.name + index"
         @pointer-enter="onPointerEnter"
@@ -30,14 +31,14 @@
         @context-menu="clickRight($event,subMesh)"
       >
         <!-- 其他配置 --> 
-        <component v-for="(item, i) in subMesh.children" :is="item.type" v-bind="item.config" />
+        <component v-for="(item, i) in (subMesh.children )"  :is="item.type" v-bind="item.config" :width="4" :height="4" :depth="1"  />
       </TresMesh>
       <primitive v-else-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
     </Suspense >
     <!-- 变换控制器 -->
-    <TransformControls v-if="transformRef" :object="transformRef" v-bind="TransformControlsState"  />
+    <TransformControls v-if="transformRef" :object="transformRef" v-bind="TransformControlsState" :mode="mode" />
     <Suspense>
     </Suspense>
   </TresCanvas>
@@ -82,7 +83,7 @@ watch(()=>lightSetting,(e)=>{
     })
   })
 },{deep:true, immediate:true})
-const mode = ref('rotate')
+const mode = ref('translate')
 watch(()=>transformControlsState,(e)=>{
   if(!e) return
   mode.value = e.mode

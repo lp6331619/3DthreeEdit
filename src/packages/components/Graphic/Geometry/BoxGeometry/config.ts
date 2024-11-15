@@ -24,6 +24,9 @@ export const FontWeightObject = {
 
 export const option = {
   dataset: '',
+  width: 2,
+  height: 2,
+  depth: 2,
   widthSegments: 4,
   heightSegments: 1,
   depthSegments: 1
@@ -32,7 +35,10 @@ export const children = [
   {
     type: 'TresBoxGeometry',
     config: {
-      args: [2, 2, 2]
+      args: [2, 2, 2],
+      width: 2,
+      height: 2,
+      depth: 2
     }
   },
   {
