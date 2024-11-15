@@ -15,21 +15,14 @@
     <!-- 环境光 -->
     <TresAmbientLight :intensity="2"/>
     <!-- 灯光 -->
-    <template v-for="(item,i) in lightSetting">
-      <component ref="lightRef" :is="item.type" v-bind="item.config" />
-    </template>
-    <template v-for="(subMesh, index) in componentList">
-      <!-- Primitives -->
-      <primitive v-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
-      <Sky v-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
-      <Stars v-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
+    <component v-for="(item,i) in lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
+    <Suspense v-for="(subMesh, index) in componentList" :key="index" >
       <!-- 添加的mesh对象 -->
       <TresMesh
         v-if="subMesh.type == 'TresMesh'"
         ref="TresMeshRef"
         v-bind="subMesh.option"
         cast-shadow 
-        :key="index" 
         :name="subMesh.name + index"
         @pointer-enter="onPointerEnter"
         @pointer-leave="onPointerLeave"
@@ -37,15 +30,15 @@
         @context-menu="clickRight($event,subMesh)"
       >
         <!-- 其他配置 --> 
-        <template v-for="(item, i) in subMesh.children">
-          <component :is="item.type" v-bind="item.config" />
-        </template>
+        <component v-for="(item, i) in subMesh.children" :is="item.type" v-bind="item.config" />
       </TresMesh>
-    </template>
+      <primitive v-else-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
+      <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
+      <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
+    </Suspense >
     <!-- 变换控制器 -->
-    <TransformControls v-if="transformRef" :object="transformRef" v-bind="TransformControlsState" :mode="mode" />
+    <TransformControls v-if="transformRef" :object="transformRef" v-bind="TransformControlsState"  />
     <Suspense>
-      <!-- <primitive :object="nodes.sm_car" /> -->
     </Suspense>
   </TresCanvas>
 </template>
@@ -63,13 +56,21 @@ const cameraConfig = chartEditStore.getCameraConfig
 const lightSetting = chartEditStore.getLightSetting
 // 控制器的配置
 const transformControlsState = chartEditStore.getTransformControlsState
-const emits = defineEmits(['click'])
-
+const emits = defineEmits(['click','rightClick'])
 const TresCanvasRef = shallowRef()
 const TresMeshRef = shallowRef()
 const transformRef = shallowRef()
 const cameraRef = shallowRef()
 const lightRef = shallowRef([])
+watchEffect(() => {
+	if (TresCanvasRef.value) {
+		let renderer = TresCanvasRef.value.context.renderer.value
+		let scene = TresCanvasRef.value.context.scene.value
+		let camera = TresCanvasRef.value.context.camera.value
+    renderer.render(scene,camera)
+    renderer.dispose()
+	}
+})
 // 灯光
 watch(()=>lightSetting,(e)=>{
   if(!e) return 
@@ -81,15 +82,6 @@ watch(()=>lightSetting,(e)=>{
     })
   })
 },{deep:true, immediate:true})
-watchEffect(() => {
-	if (TresCanvasRef.value) {
-		let renderer = TresCanvasRef.value.context.renderer.value
-		let scene = TresCanvasRef.value.context.scene.value
-		let camera = TresCanvasRef.value.context.camera.value
-    renderer.render(scene,camera)
-    renderer.dispose()
-	}
-})
 const mode = ref('rotate')
 watch(()=>transformControlsState,(e)=>{
   if(!e) return
@@ -116,6 +108,7 @@ const clickObject = (name: string,i:number,e:Event) => {
     e:e
   })
 }
+// 点击右键
 const clickRight = (e:Event,item:anyObj)=>{
   console.log(e,item)
 }
