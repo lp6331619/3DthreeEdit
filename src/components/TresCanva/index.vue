@@ -82,7 +82,8 @@ const config = reactive({
 })
 watch(()=>componentList,(e)=>{
   const [f] = e ||[]
-  config.componentList = deepClone(e)
+  console.log(e,'配置哟')
+  config.componentList =  deepClone(e)
   if(!f) return 
   nextTick(()=>{
     meshConfig.value = e.map(item=>{
