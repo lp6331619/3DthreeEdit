@@ -1,12 +1,5 @@
 <template>
-  <div style="max-height:200px">
-    <div v-for="(subMesh, index) in meshConfig" :key="index">
-      {{subMesh.key}}
-        <div v-for="(item, i) in (subMesh.children )" :key="i">{{item}}</div>
-    </div>
-  </div>
-  <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef"
-  @context-menu="(event:any) => console.log('context-menu (right click)',event)">
+  <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef">
     <!-- 轴 -->
     <TresAxesHelper :args="[10]" />
     <!-- 控制 -->
@@ -55,6 +48,7 @@ import {throttle,deepClone} from '@/utils'
 import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore'
 import { storeToRefs } from 'pinia'
 const chartEditStore = useChartEditStore()
+const {transformRef} = storeToRefs(chartEditStore)
 // 模型配置
 const componentList = chartEditStore.getComponentList
 // 画布配置
@@ -65,7 +59,6 @@ const cameraConfig = chartEditStore.getCameraConfig
 const lightSetting = chartEditStore.getLightSetting
 // 变换配置
 const transformControlsState = chartEditStore.getTransformControlsState
-const transformRef = chartEditStore.getTransformRef
 const emits = defineEmits(['click','rightClick'])
 const TresCanvasRef = shallowRef()
 const TresMeshRef = shallowRef()
@@ -117,13 +110,12 @@ const { onLoop, onBeforeLoop, onAfterLoop,pause, resume } = useRenderLoop()
 const clickObject = (name,i,e) => {
   for (let s in TresMeshRef.value) {
     if (TresMeshRef.value[s].name === name) {
-      transformRef = TresMeshRef.value[s]
-      console.log(transformRef,123)
+      transformRef.value = TresMeshRef.value[s]
     } 
   }
   transformControlsState.enabled = true
   emits('click', {
-    ref:transformRef,
+    ref:transformRef.value,
     config:componentList[i],
     e:e
   })

@@ -2,7 +2,7 @@
  * @Author: sorry 247076126@qq.com
  * @Date: 2024-11-05 15:00:07
  * @LastEditors: sorry 247076126@qq.com
- * @LastEditTime: 2024-11-15 16:58:56
+ * @LastEditTime: 2024-11-16 13:51:40
  * @FilePath: \3DThreeEdit\src\packages\components\Graphic\Geometry\BoxGeometry\config.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -18,7 +18,6 @@
       <n-input-number v-model:value="childrenData[0].config.args[2]" :step="1" size="small"></n-input-number>
     </setting-item>
   </setting-item-box> 
-
   <collapse-item name="材质" :expanded="true">
     <setting-item-box name="材质类型" :alone="true">
       <setting-item>

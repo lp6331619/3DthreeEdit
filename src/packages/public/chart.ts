@@ -57,6 +57,14 @@ export const materialList = [
     value: 'MeshBasicMaterial'
   },
   {
+    label: '标准网格材质',
+    value: 'MeshStandardMaterial'
+  },
+  {
+    label: '卡通网格材质',
+    value: 'MeshToonMaterial'
+  },
+  {
     label: '深度网格材质',
     value: 'MeshDepthMaterial'
   },
@@ -83,13 +91,5 @@ export const materialList = [
   {
     label: '物理网格材质',
     value: 'MeshPhysicalMaterial'
-  },
-  {
-    label: '标准网格材质',
-    value: 'MeshStandardMaterial'
-  },
-  {
-    label: '卡通网格材质',
-    value: 'MeshToonMaterial'
   }
 ]

@@ -417,6 +417,8 @@ export const useChartEditStore = defineStore({
     // * 删除组件
     removeComponentList(id?: string | string[], isHistory = true): void {
       try {
+        this.transformControlsState.enabled = false
+        this.transformRef = null
         const idArr = this.idPreFormat(id)
         const history: Array<CreateComponentType | CreateComponentGroupType> = []
         // 遍历所有对象
@@ -434,6 +436,7 @@ export const useChartEditStore = defineStore({
         loadingFinish()
         return
       } catch (value) {
+        console.log(value, 123)
         loadingError()
       }
     },
