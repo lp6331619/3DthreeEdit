@@ -20,14 +20,14 @@ export const option = {
 }
 export const children = [
   {
-    type: 'TresSphereGeometry',
+    type: 'SphereGeometry',
     config: {
       args: [1, 32, 32]
     }
   },
   {
     config: { color: '#214A68' },
-    type: 'TresMeshToonMaterial'
+    type: 'MeshToonMaterial'
   }
 ]
 export default class Config extends PublicConfigClass implements CreateComponentType {

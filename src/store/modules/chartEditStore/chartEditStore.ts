@@ -171,11 +171,7 @@ export const useChartEditStore = defineStore({
       // minPolarAngle: 0,
       // maxAzimuthAngle: Math.PI,
       // minAzimuthAngle: -Math.PI,
-      // enablePan: true,
-      // keyPanSpeed: 7
 
-      // minZoom: 0,
-      // maxZoom: 100,
       // enableRotate: true,
       // rotateSpeed: 1
     },
@@ -191,9 +187,10 @@ export const useChartEditStore = defineStore({
         }
       }
     ],
+    //变换控制器
     transformControlsState: {
       mode: 'translate',
-      enabled: true,
+      enabled: false,
       space: 'world',
       axis: 'XYZ',
       size: 1,
@@ -201,6 +198,8 @@ export const useChartEditStore = defineStore({
       showY: true,
       showZ: true
     },
+    // 鼠标选中的元素
+    transformRef: null,
     // 图表数组（需存储给后端）
     componentList: []
   }),
@@ -237,6 +236,9 @@ export const useChartEditStore = defineStore({
     },
     getTransformControlsState() {
       return this.transformControlsState
+    },
+    getTransformRef() {
+      return this.transformRef
     }
   },
   actions: {

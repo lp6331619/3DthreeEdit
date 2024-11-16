@@ -48,7 +48,7 @@
         </edit-range>
       </div>
     </edit-rule> -->
-    <TresCanva  @click="TresCanvaClick" />
+    <TresCanva @click="TresCanvaClick" />
     <!-- 工具栏 -->
     <template #aside>
       <edit-tools></edit-tools>

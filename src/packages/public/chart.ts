@@ -48,3 +48,48 @@ export const setOption = <T extends typeof VChart | undefined, D>(instance: T, d
     notMerge: notMerge
   })
 }
+/**
+ * * 材质列表
+ */
+export const materialList = [
+  {
+    label: '基础网格材质',
+    value: 'MeshBasicMaterial'
+  },
+  {
+    label: '深度网格材质',
+    value: 'MeshDepthMaterial'
+  },
+  // {
+  //   label: '距离网格材质',
+  //   value: 'MeshDistanceMaterial'
+  // },
+  {
+    label: 'Lambert网格材质',
+    value: 'MeshLambertMaterial'
+  },
+  {
+    label: '材质捕捉网格材质',
+    value: 'MeshMatcapMaterial'
+  },
+  {
+    label: '法线网格材质',
+    value: 'MeshNormalMaterial'
+  },
+  {
+    label: 'Phong网格材质',
+    value: 'MeshPhongMaterial'
+  },
+  {
+    label: '物理网格材质',
+    value: 'MeshPhysicalMaterial'
+  },
+  {
+    label: '标准网格材质',
+    value: 'MeshStandardMaterial'
+  },
+  {
+    label: '卡通网格材质',
+    value: 'MeshToonMaterial'
+  }
+]

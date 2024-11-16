@@ -1,8 +1,12 @@
 <template>
- 
+  <div style="max-height:200px">
+    <div v-for="(subMesh, index) in meshConfig" :key="index">
+      {{subMesh.key}}
+        <div v-for="(item, i) in (subMesh.children )" :key="i">{{item}}</div>
+    </div>
+  </div>
   <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef"
-  @context-menu="(event:any) => console.log('context-menu (right click)',event)"
-  @pointer-missed="(event:any) => transformRef = null">
+  @context-menu="(event:any) => console.log('context-menu (right click)',event)">
     <!-- 轴 -->
     <TresAxesHelper :args="[10]" />
     <!-- 控制 -->
@@ -15,102 +19,117 @@
     <!-- 环境光 -->
     <TresAmbientLight :intensity="2"/>
     <!-- 灯光 -->
-    <component v-for="(item,i) in lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
-    <Suspense v-for="(subMesh, index) in componentList" :key="index" >
+    <component v-for="(item,i) in config.lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
+    <Suspense v-for="(subMesh, index) in config.componentList" :key="index" >
       <!-- 添加的mesh对象 -->
       <TresMesh
         v-if="subMesh.type == 'TresMesh'"
         ref="TresMeshRef"
         v-bind="subMesh.option"
-        :width="4" :height="4" :depth="1"
         cast-shadow 
         :name="subMesh.name + index"
-        @pointer-enter="onPointerEnter"
-        @pointer-leave="onPointerLeave"
-        @click="clickObject(subMesh.name + index,index,$event)"
+        :onlyId="subMesh.id"
+        @pointer-enter="onPointerEnter($event)"
+        @pointer-leave="onPointerLeave($event)"
+        @click="clickObject(subMesh.name+index,index,$event)"
         @context-menu="clickRight($event,subMesh)"
       >
         <!-- 其他配置 --> 
-        <component v-for="(item, i) in (subMesh.children )"  :is="item.type" v-bind="item.config" :width="4" :height="4" :depth="1"  />
+        <component v-for="(item, i) in subMesh.children" :key="item.key" :is="'Tres'+item.type" v-bind="item.config" />
       </TresMesh>
       <primitive v-else-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
     </Suspense >
     <!-- 变换控制器 -->
-    <TransformControls v-if="transformRef" :object="transformRef" v-bind="TransformControlsState" :mode="mode" />
-    <Suspense>
-    </Suspense>
+    <TransformControls v-if="transformControlsState.enabled" :object="transformRef" v-bind="transformControlsState"  />
   </TresCanvas>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive,computed, watchEffect,nextTick, onMounted,watch, onUpdated ,shallowRef} from 'vue'
+<script setup >
+import { ref, reactive,computed,toRef, watchEffect,nextTick, onMounted,watch, onUpdated ,shallowRef} from 'vue'
 import { useRenderLoop,useTresContext,vLightHelper } from '@tresjs/core'
 import { initEvents, registerEvent, unregisterEvent, updateEvents } from '@/utils/event'
 import { OrbitControls, TransformControls,CameraControls ,Stars,Sky ,useGLTF , } from '@tresjs/cientos'
+import {throttle,deepClone} from '@/utils'
 import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore'
+import { storeToRefs } from 'pinia'
 const chartEditStore = useChartEditStore()
+// 模型配置
 const componentList = chartEditStore.getComponentList
+// 画布配置
 const canvasConfig = chartEditStore.getEditCanvasConfig
+// 相机配置
 const cameraConfig = chartEditStore.getCameraConfig
+// 灯光配置
 const lightSetting = chartEditStore.getLightSetting
-// 控制器的配置
+// 变换配置
 const transformControlsState = chartEditStore.getTransformControlsState
+const transformRef = chartEditStore.getTransformRef
 const emits = defineEmits(['click','rightClick'])
 const TresCanvasRef = shallowRef()
 const TresMeshRef = shallowRef()
-const transformRef = shallowRef()
 const cameraRef = shallowRef()
 const lightRef = shallowRef([])
-watchEffect(() => {
-	if (TresCanvasRef.value) {
-		let renderer = TresCanvasRef.value.context.renderer.value
-		let scene = TresCanvasRef.value.context.scene.value
-		let camera = TresCanvasRef.value.context.camera.value
-    renderer.render(scene,camera)
-    renderer.dispose()
-	}
+// watchEffect((e) => {
+// 	if (TresCanvasRef.value) {
+// 		let renderer = TresCanvasRef.value.context.renderer.value
+// 		let scene = TresCanvasRef.value.context.scene.value
+// 		let camera = TresCanvasRef.value.context.camera.value
+//     renderer.render(scene,camera)
+//     renderer.dispose()
+// 	}
+// })
+// 模型
+const meshConfig = ref([])
+const config = reactive({
+  // 模型数据
+  componentList:[],
+  lightSetting:[]
 })
-// 灯光
-watch(()=>lightSetting,(e)=>{
-  if(!e) return 
+watch(()=>componentList,(e)=>{
+  const [f] = e ||[]
+  config.componentList = deepClone(e)
+  if(!f) return 
   nextTick(()=>{
-    e.forEach((item:any,i:number)=>{
-      if(item.config.position?.length) { 
-        lightRef.value[i]?.position.set(item.config.position[0],item.config.position[1],item.config.position[2])
-       }
+    meshConfig.value = e.map(item=>{
+      const obj = TresMeshRef.value?.find(c=>c.onlyId==item.id)
+      return {
+        ...item,
+        //先获取元素的颜色
+        color: '#'+obj?.material.color.getHexString() || 'ffffff',
+      }
     })
   })
 },{deep:true, immediate:true})
-const mode = ref('translate')
-watch(()=>transformControlsState,(e)=>{
-  if(!e) return
-  mode.value = e.mode
-},{
-  deep:true,
-  immediate:true
-})
-const objectBox = async(item:any) => {
+// 灯光
+watch(()=>lightSetting,(e)=>{
+  config.lightSetting = deepClone(e)
+  if(!e) return 
+},{deep:true, immediate:true})
+
+const objectBox = async(item) => {
   const { nodes } = await useGLTF(JSON.parse(item.meshConfig))
   return nodes
 }
 const { onLoop, onBeforeLoop, onAfterLoop,pause, resume } = useRenderLoop()
 // 选择模型移动
-const clickObject = (name: string,i:number,e:Event) => {
+const clickObject = (name,i,e) => {
   for (let s in TresMeshRef.value) {
     if (TresMeshRef.value[s].name === name) {
-      transformRef.value = TresMeshRef.value[s]
+      transformRef = TresMeshRef.value[s]
+      console.log(transformRef,123)
     } 
   }
+  transformControlsState.enabled = true
   emits('click', {
-    ref:transformRef.value,
+    ref:transformRef,
     config:componentList[i],
     e:e
   })
 }
 // 点击右键
-const clickRight = (e:Event,item:anyObj)=>{
+const clickRight = (e,item)=>{
   console.log(e,item)
 }
 
@@ -119,20 +138,24 @@ onLoop(({ delta, elapsed }) => {
 })
 onAfterLoop((res)=>{
 })
+
 // 鼠标移入到模型上时，改变模型颜色
-function onPointerEnter(ev: any) {
+const changeColor = throttle((ev) => {
+  ev.object.material.color.set('#DFFF45')
+},200)
+function onPointerEnter(ev) {
   if (ev) {
-    ev.object.material.color.set('#DFFF45')
+    changeColor(ev)
     // pause()
   }
 }
 // 鼠标移出时，恢复模型颜色
-function onPointerLeave(ev: any) {
+function onPointerLeave(ev) {
   if (ev) {
-    ev.eventObject.material.color.set('#214A68')
+    const mesh = meshConfig.value.find(item => ev.eventObject.onlyId ==item.id)
+    ev.eventObject.material.color.set(mesh.color)
     // resume()
   }
 }
-watchEffect(() => {})
 onMounted(() => {})
 </script>

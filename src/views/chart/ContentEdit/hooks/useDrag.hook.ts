@@ -50,6 +50,7 @@ export const TresCanvaClick = async (obj: any) => {
   const { config, e, ref } = obj
   onClickOutSide()
   // 若此时按下了 CTRL, 表示多选
+  if (!config.id) return
   const id = config.id
   if (e.buttons === MouseEventButton.LEFT && window.$KeyboardActive?.ctrl) {
     // 若已选中，则去除
