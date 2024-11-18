@@ -83,14 +83,24 @@ const config = reactive({
 watch(()=>componentList,(e)=>{
   const [f] = e ||[]
   console.log(e,'配置哟')
-  config.componentList =  deepClone(e)
+  if (TresCanvasRef.value) {
+		let scene = TresCanvasRef.value.context.scene.value
+    const {children} = scene
+    config.componentList =  deepClone(e)?.map(item=>{
+      const obj = children.find(c=>c.onlyId ==item.id)
+      return {
+        ...item,
+        options:{position:obj?.position},
+      }
+    })
+  }
   if(!f) return 
   nextTick(()=>{
     meshConfig.value = e.map(item=>{
       const obj = TresMeshRef.value?.find(c=>c.onlyId==item.id)
       return {
         ...item,
-        //先获取元素的颜色
+        //先获取模型的颜色
         color: '#'+obj?.material.color.getHexString() || 'ffffff',
       }
     })
