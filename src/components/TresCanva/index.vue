@@ -1,4 +1,5 @@
 <template>
+  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{config.componentList}}</div> -->
   <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef">
     <!-- 轴 -->
     <TresAxesHelper :args="[10]" />
@@ -64,6 +65,7 @@ const TresCanvasRef = shallowRef()
 const TresMeshRef = shallowRef()
 const cameraRef = shallowRef()
 const lightRef = shallowRef([])
+const scenePosition = shallowRef([])
 // watchEffect((e) => {
 // 	if (TresCanvasRef.value) {
 // 		let renderer = TresCanvasRef.value.context.renderer.value
@@ -81,22 +83,16 @@ const config = reactive({
   lightSetting:[]
 })
 watch(()=>componentList,(e)=>{
-  const [f] = e ||[]
-  console.log(e,'配置哟')
-  if (TresCanvasRef.value) {
-		let scene = TresCanvasRef.value.context.scene.value
-    const {children} = scene
-    config.componentList =  deepClone(e)?.map(item=>{
-      const obj = children.find(c=>c.onlyId ==item.id)
-      return {
-        ...item,
-        options:{position:obj?.position},
-      }
-    })
-  }
-  if(!f) return 
+  config.componentList = deepClone(e)?.map(item=>{
+    const obj = scenePosition.value.find(c=>c.onlyId ==item.id)
+    const d = {
+      ...item,
+      option:{position:obj?.position||[0,0,0]},
+    }
+    return d
+  })
   nextTick(()=>{
-    meshConfig.value = e.map(item=>{
+    meshConfig.value = e?.map(item=>{
       const obj = TresMeshRef.value?.find(c=>c.onlyId==item.id)
       return {
         ...item,
@@ -108,8 +104,7 @@ watch(()=>componentList,(e)=>{
 },{deep:true, immediate:true})
 // 灯光
 watch(()=>lightSetting,(e)=>{
-  config.lightSetting = deepClone(e)
-  if(!e) return 
+  config.lightSetting = deepClone(e||[])
 },{deep:true, immediate:true})
 
 const objectBox = async(item) => {
@@ -125,6 +120,14 @@ const clickObject = (name,i,e) => {
     } 
   }
   transformControlsState.enabled = true
+  let scene = TresCanvasRef.value.context.scene.value
+  const {children} = scene
+  scenePosition.value = children.filter(item=>item.onlyId).map(item=>{
+    return {
+      position:item.position.clone(),
+      onlyId:item.onlyId
+    }
+  }) 
   emits('click', {
     ref:transformRef.value,
     config:componentList[i],
@@ -137,7 +140,7 @@ const clickRight = (e,item)=>{
 }
 
 onLoop(({ delta, elapsed }) => {
-    updateEvents(elapsed * 1000, delta * 1000)
+  updateEvents(elapsed * 1000, delta * 1000)
 })
 onAfterLoop((res)=>{
 })
