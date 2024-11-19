@@ -12,38 +12,50 @@
     <!-- <CameraControls :camera="cameraRef" ref="controlsRef" v-bind="cameraConfig" make-default  /> -->
     <!-- 环境光 -->
     <TresAmbientLight :intensity="2"/>
+    <TresDirectionalLight
+      :intensity="2"
+      :position="[2, 3, 0]"
+      :cast-shadow="true"
+      :shadow-camera-far="50"
+      :shadow-camera-left="-10"
+      :shadow-camera-right="10"
+      :shadow-camera-top="10"
+      :shadow-camera-bottom="-10"
+    />
     <!-- 灯光 -->
     <component v-for="(item,i) in config.lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
     <Suspense v-for="(subMesh, index) in config.componentList" :key="subMesh.id" >
       <!-- 添加的mesh对象 -->
       <TresMesh
-        v-if="subMesh.type == 'TresMesh' || subMesh.type=='Html'"
-        ref="TresMeshRef"
+        v-if="subMesh.type == 'TresMesh'"
+        :ref="(el)=>subMesh.el=el "
         v-bind="subMesh.type=='Html'?defaultOption : subMesh.option"
         cast-shadow 
         :name="subMesh.id + index"
         :onlyId="subMesh.id"
         @pointer-enter="onPointerEnter($event)"
         @pointer-leave="onPointerLeave($event)"
-        @click="clickObject(subMesh.id,index,$event)"
+        @click="clickObject(subMesh,index,$event)"
         @context-menu="clickRight($event,subMesh)"
       >
         <!-- 其他配置 --> 
         <component v-for="(item, i) in subMesh.children || defaultChildren" :key="item.key" :is="'Tres'+item.type" v-bind="item.config"  />
-        <Html v-if="subMesh.type=='Html'" v-bind="htmlState" >
-          <component
-            class="edit-content-chart"
-            :class="animationsClass(subMesh.styles.animations)"
-            :is="subMesh.chartConfig.chartKey"
-            :chartConfig="subMesh"
-            :style="{
-              ...useSizeStyle(subMesh.attr),
-              ...getFilterStyle(subMesh.styles),
-              ...getTransformStyle(subMesh.styles)
-            }"
-          ></component>
-        </Html>
       </TresMesh>
+      <!-- html渲染 -->
+      <Html v-else-if="subMesh.type=='Html'" :ref="(el)=>subMesh.el=el" v-bind="htmlState" >
+        <component
+          class="edit-content-chart"
+          :data-id="subMesh.id"
+          @click="htmlClick(subMesh,index)"
+          :class="animationsClass(subMesh.styles.animations)"
+          :is="subMesh.chartConfig.chartKey"
+          :chartConfig="subMesh"
+          :style="{
+            ...useSizeStyle(subMesh.attr),
+            ...getTransformStyle(subMesh.styles)
+          }"
+        ></component>
+      </Html>
       <primitive v-else-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
@@ -81,17 +93,13 @@ const lightSetting = chartEditStore.getLightSetting
 const transformControlsState = chartEditStore.getTransformControlsState
 const emits = defineEmits(['click','rightClick'])
 const TresCanvasRef = shallowRef()
-const TresMeshRef = shallowRef()
 const cameraRef = shallowRef()  
-const lightRef = shallowRef([])   
+const lightRef = shallowRef([])
 const htmlState = reactive({
 	wrapperClass: 'threeHtml',
-	as: 'div',
   sprite:true,
-  prepend:true,
-  // transform:true,
-  // occlude:true,
-  distanceFactor:10
+  transform: false,
+  distanceFactor: 10
 })
 // watchEffect((e) => {
 // 	if (TresCanvasRef.value) {
@@ -106,44 +114,70 @@ const htmlState = reactive({
 const config = reactive({
   // 模型数据
   componentList:[],
-  lightSetting:[]
+  lightSetting:[],
+  htmlList:{},
+  currentIndex:null,//当前变换器是第几个对象的数据
 })
 //更新配置
 watch(()=>componentList,(e)=>{
-  console.log(e,'配置更新了')
   config.componentList = deepClone(e||[])
+  console.log(config.componentList,'配置更新了')
 },{deep:true, immediate:true})
 // 灯光
 watch(()=>lightSetting,(e)=>{
   config.lightSetting = deepClone(e||[])
 },{deep:true, immediate:true})
-//变换控制器值改变
-const ControlsStateMouseDown = ()=>{
-  if(transformRef.value){
-    const position = transformRef.value.position.clone()
-    const scale = transformRef.value.scale.clone()
-    const rotation = transformRef.value.rotation.clone()
-    useChartEditStore().setComponentList(transformRef.value?.onlyId,{position:[...position.toArray()],scale:[...scale.toArray()],rotation:[...rotation.toArray()]})
-  }
-}
+
+// 主题色
+const themeSetting = computed(() => {
+  const chartThemeSetting = chartEditStore.getEditCanvasConfig.chartThemeSetting
+  return chartThemeSetting
+})
+// 配置项
+const themeColor = computed(() => {
+  const colorCustomMergeData = colorCustomMerge(chartEditStore.getEditCanvasConfig.chartCustomThemeColorInfo)
+  return colorCustomMergeData[chartEditStore.getEditCanvasConfig.chartThemeColor]
+})
+
 const objectBox = async(item) => {
   // const { nodes } = await useGLTF(JSON.parse(item.meshConfig))
   // return nodes
 }
 const { onLoop, onBeforeLoop, onAfterLoop,pause, resume } = useRenderLoop()
 // 选择模型移动
-const clickObject = (id,i,e) => {
-  for (let s in TresMeshRef.value) {
-    if (TresMeshRef.value[s].onlyId === id) {
-      transformRef.value = TresMeshRef.value[s]
-    } 
-  }
+const clickObject = (item,i,e) => {
+  transformRef.value = item.el
+  config.currentIndex = i
   transformControlsState.enabled = true
   emits('click', {
     ref:transformRef.value,
     config:componentList[i],
     e:e
   })
+}
+//点击选择html
+const htmlClick =(item,i)=>{
+  config.currentIndex = i
+  transformRef.value = item.el.instance
+  transformControlsState.enabled = true
+}
+//变换控制器值改变
+const ControlsStateMouseDown = ()=>{
+  const type = config.componentList[config.currentIndex]?.type
+  console.log(transformRef.value,3)
+  if(type=='Html') {  
+    const position = transformRef.value.position.clone()
+    const scale = transformRef.value.scale.clone()
+    const rotation = transformRef.value.rotation.clone()
+    console.log(position,scale,rotation,4)
+  }else{
+    if(transformRef.value){
+      const position = transformRef.value.position.clone()
+      const scale = transformRef.value.scale.clone()
+      const rotation = transformRef.value.rotation.clone()
+      useChartEditStore().setComponentList(transformRef.value?.onlyId,{position:[...position.toArray()],scale:[...scale.toArray()],rotation:[...rotation.toArray()]})
+    }
+  }
 }
 // 点击右键
 const clickRight = (e,item)=>{
@@ -183,4 +217,7 @@ onMounted(() => {})
 </script>
 
 <style>
+.threeHtml{
+  /* pointer-events: none; */
+}
 </style>
