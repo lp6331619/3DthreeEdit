@@ -16,4 +16,5 @@ export default class Config extends PublicConfigClass implements CreateComponent
   public key = FlowChartLineConfig.key
   public chartConfig = cloneDeep(FlowChartLineConfig)
   public option = cloneDeep(option)
+  public type = 'Html'
 }

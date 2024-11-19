@@ -17,4 +17,5 @@ export default class Config extends PublicConfigClass implements CreateComponent
   public key = Border04Config.key
   public chartConfig = cloneDeep(Border04Config)
   public option = cloneDeep(option)
+  public type = 'Html'
 }

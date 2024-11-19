@@ -2,7 +2,7 @@
  * @Author: sorry 247076126@qq.com
  * @Date: 2024-10-12 14:14:11
  * @LastEditors: sorry 247076126@qq.com
- * @LastEditTime: 2024-11-05 14:24:43
+ * @LastEditTime: 2024-11-19 14:36:02
  * @FilePath: \3DThreeEdit\src\settings\designSetting.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -32,13 +32,44 @@ export const theme = {
 export const chartInitConfig = {
   x: 50,
   y: 50,
-  w: 500,
-  h: 300,
+  w: 150,
+  h: 100,
   // 不建议动 offset
   offsetX: 0,
   offsetY: 0
 }
+//默认模型配置
+export const defaultOption = {
+  position: [0, 0, 0],
+  castShadow: true
+}
+export const defaultChildren = [
+  {
+    type: 'BoxGeometry',
+    config: {
+      args: [1, 1, 1]
+    }
+  },
+  {
+    config: {
+      //基础配置
+      opacity: 0.01,
+      visible: false,
+      transparent: true,
+      color: '#214A68',
+      fog: true,
+      wireframe: true
 
+      // vertexColors: true 不支持 顶点着色
+      // map: 'none'
+      // gradientMap: 'threeTone'
+      // alphaMap: 'none'
+      // vertexColors: true,
+      // wireframe: false
+    },
+    type: 'MeshToonMaterial'
+  }
+]
 // dialog 图标的大小
 export const dialogIconSize = '20'
 

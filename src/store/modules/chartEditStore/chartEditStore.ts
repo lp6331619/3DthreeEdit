@@ -467,6 +467,16 @@ export const useChartEditStore = defineStore({
       if (index < 1 && index > this.getComponentList.length) return
       this.componentList[index] = newData
     },
+    //设置option
+    setComponentList(id: String, newData: CreateComponentType | CreateComponentGroupType) {
+      const index = this.getComponentList.findIndex(item => id == item.id)
+      this.componentList[index].option = { ...this.componentList[index].option, ...newData }
+    },
+    //设置children
+    setComponentListChildren(id: String, newData: CreateComponentType | CreateComponentGroupType) {
+      const index = this.getComponentList.findIndex(item => id == item.id)
+      this.componentList[index].children = [...this.componentList[index].children, ...newData]
+    },
     // * 设置页面样式属性
     setPageStyle<T extends keyof CSSStyleDeclaration>(key: T, value: any): void {
       const dom = this.getEditCanvas.editContentDom

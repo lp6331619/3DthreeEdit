@@ -35,4 +35,5 @@ export default class Config extends PublicConfigClass implements CreateComponent
   public attr = { ...chartInitConfig, w: 300, h: 50, zIndex: -1 }
   public chartConfig = cloneDeep(TimeCommonConfig)
   public option = cloneDeep(option)
+  public type = 'Html'
 }

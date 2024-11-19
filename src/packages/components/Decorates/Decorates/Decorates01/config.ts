@@ -14,4 +14,5 @@ export default class Config extends PublicConfigClass implements CreateComponent
   public key = Decorates01Config.key
   public chartConfig = cloneDeep(Decorates01Config)
   public option = cloneDeep(option)
+  public type = 'Html'
 }

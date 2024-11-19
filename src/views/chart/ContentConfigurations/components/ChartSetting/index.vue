@@ -11,7 +11,7 @@
     <!-- 名称 -->
     <name-setting :chartConfig="targetData.chartConfig"></name-setting>
     <!-- 尺寸 -->
-    <!-- <size-setting :isGroup="targetData.isGroup" :chartAttr="targetData.attr"></size-setting> -->
+    <size-setting v-if="targetData.type!='TresMesh'" :isGroup="targetData.isGroup" :chartAttr="targetData.attr"></size-setting>
     <!-- 位置 -->
     <!-- <position-setting :chartAttr="targetData.attr" :canvasConfig="chartEditStore.getEditCanvasConfig" /> -->
     <!-- 滤镜 -->

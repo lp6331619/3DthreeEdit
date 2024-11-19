@@ -184,15 +184,15 @@ export enum PackagesCategoryEnum {
 
 // 包分类名称
 export enum PackagesCategoryName {
-  GRAPHIC = '图形库',
   CHARTS = '图表',
-  INFORMATIONS = '图形库',
-  DECORATES = '环境库（旧）',
-  PHOTOS = '动画库',
-  ICONS = '图标',
-
+  INFORMATIONS = '模型库',
   TABLES = '模型库',
-  Environment = '环境库'
+
+  GRAPHIC = '模型库',
+  DECORATES = '图形库',
+  Environment = '环境库',
+  PHOTOS = '动画库',
+  ICONS = '图标'
 }
 
 // 获取组件

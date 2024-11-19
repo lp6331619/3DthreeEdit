@@ -23,7 +23,7 @@ export let packagesList: PackagesType = {
   // [PackagesCategoryEnum.CHARTS]: ChartList,
   [PackagesCategoryEnum.GRAPHIC]: Graphic,
   // [PackagesCategoryEnum.INFORMATIONS]: InformationList,
-  [PackagesCategoryEnum.TABLES]: TableList,
+  // [PackagesCategoryEnum.TABLES]: TableList,
   [PackagesCategoryEnum.DECORATES]: DecorateList,
   [PackagesCategoryEnum.ENVIRONMENT]: Environment,
   [PackagesCategoryEnum.PHOTOS]: PhotoList,
