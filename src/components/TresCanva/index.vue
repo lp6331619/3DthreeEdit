@@ -1,5 +1,5 @@
 <template>
-  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{TresMeshRef}}</div> -->
+  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{config.componentList}}</div> -->
   <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef" @click="(e)=>console.log(e)">
     <!-- 轴 -->
     <TresAxesHelper :args="[10]" />
@@ -24,7 +24,7 @@
     />
     <!-- 灯光 -->
     <component v-for="(item,i) in config.lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
-    <Suspense v-for="(subMesh, index) in config.componentList" :key="subMesh.id" >
+    <Suspense v-for="(subMesh, index) in config.componentList" :key="subMesh.key" >
       <!-- 添加的mesh对象 -->
       <TresMesh
         v-if="subMesh.type == 'TresMesh'"
@@ -35,7 +35,7 @@
         :onlyId="subMesh.id"
         @pointer-enter="onPointerEnter($event)"
         @pointer-leave="onPointerLeave($event)"
-        @click="clickObject(subMesh,index,$event)"
+        @click="clickMesh(subMesh,index,$event)"
         @context-menu="clickRight($event,subMesh)"
       >
         <!-- 其他配置 --> 
@@ -45,8 +45,7 @@
       <Html v-else-if="subMesh.type=='Html'" :ref="(el)=>subMesh.el=el" v-bind="htmlState" >
         <component
           class="edit-content-chart"
-          :data-id="subMesh.id"
-          @click="htmlClick(subMesh,index)"
+          @click="clickHtml(subMesh,index)"
           :class="animationsClass(subMesh.styles.animations)"
           :is="subMesh.chartConfig.chartKey"
           :chartConfig="subMesh"
@@ -59,7 +58,6 @@
       <primitive v-else-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
-      
     </Suspense>
     <!-- 变换控制器 -->
     <TransformControls v-if="transformControlsState.enabled" :object="transformRef" v-bind="transformControlsState" @mouseDown="ControlsStateMouseDown" />
@@ -98,8 +96,6 @@ const lightRef = shallowRef([])
 const htmlState = reactive({
 	wrapperClass: 'threeHtml',
   sprite:true,
-  transform: false,
-  distanceFactor: 10
 })
 // watchEffect((e) => {
 // 	if (TresCanvasRef.value) {
@@ -120,14 +116,21 @@ const config = reactive({
 })
 //更新配置
 watch(()=>componentList,(e)=>{
-  config.componentList = deepClone(e||[])
+  const min = 1;
+  const max = 100;
+  const randomInteger = Math.floor(Math.random() * (max - min + 1)) + min;
+  config.componentList = deepClone(e||[])?.map(item=>{
+   return {
+    ...item,
+    key:item.id+randomInteger
+   } 
+  })
   console.log(config.componentList,'配置更新了')
 },{deep:true, immediate:true})
 // 灯光
 watch(()=>lightSetting,(e)=>{
   config.lightSetting = deepClone(e||[])
 },{deep:true, immediate:true})
-
 // 主题色
 const themeSetting = computed(() => {
   const chartThemeSetting = chartEditStore.getEditCanvasConfig.chartThemeSetting
@@ -145,7 +148,7 @@ const objectBox = async(item) => {
 }
 const { onLoop, onBeforeLoop, onAfterLoop,pause, resume } = useRenderLoop()
 // 选择模型移动
-const clickObject = (item,i,e) => {
+const clickMesh = (item,i,e) => {
   transformRef.value = item.el
   config.currentIndex = i
   transformControlsState.enabled = true
@@ -156,20 +159,15 @@ const clickObject = (item,i,e) => {
   })
 }
 //点击选择html
-const htmlClick =(item,i)=>{
+const clickHtml =(item,i)=>{
   config.currentIndex = i
   transformRef.value = item.el.instance
   transformControlsState.enabled = true
 }
 //变换控制器值改变
 const ControlsStateMouseDown = ()=>{
-  const type = config.componentList[config.currentIndex]?.type
-  console.log(transformRef.value,3)
-  if(type=='Html') {  
-    const position = transformRef.value.position.clone()
-    const scale = transformRef.value.scale.clone()
-    const rotation = transformRef.value.rotation.clone()
-    console.log(position,scale,rotation,4)
+  const item = config.componentList[config.currentIndex]
+  if(item.type=='Html') {  
   }else{
     if(transformRef.value){
       const position = transformRef.value.position.clone()
