@@ -49,22 +49,22 @@ export const defaultOptions: MenuOptionsItemType[] = [
   //   icon: renderIcon(LockOpenOutlineIcon),
   //   fnHandle: chartEditStore.setUnLock
   // },
-  // {
-  //   label: '隐藏',
-  //   key: MenuEnum.HIDE,
-  //   icon: renderIcon(EyeOffOutlineIcon),
-  //   fnHandle: chartEditStore.setHide
-  // },
-  // {
-  //   label: '显示',
-  //   key: MenuEnum.SHOW,
-  //   icon: renderIcon(EyeOutlineIcon),
-  //   fnHandle: chartEditStore.setShow
-  // },
-  // {
-  //   type: 'divider',
-  //   key: 'd0'
-  // },
+  {
+    label: '隐藏',
+    key: MenuEnum.HIDE,
+    icon: renderIcon(EyeOffOutlineIcon),
+    fnHandle: chartEditStore.setHide
+  },
+  {
+    label: '显示',
+    key: MenuEnum.SHOW,
+    icon: renderIcon(EyeOutlineIcon),
+    fnHandle: chartEditStore.setShow
+  },
+  {
+    type: 'divider',
+    key: 'd0'
+  },
   {
     label: '复制',
     key: MenuEnum.COPY,
@@ -191,13 +191,12 @@ const handleContextMenu = (
   // 挑选选项列表
   pickOptionsList?: MenuEnum[]
 ) => {
-  e.stopPropagation()
-  e.preventDefault()
+  // e.stopPropagation()
+  // e.preventDefault()
   let target = e.target
   while (target instanceof SVGElement) {
     target = target.parentNode
   }
-
   chartEditStore.setTargetSelectChart(targetInstance && targetInstance.id)
 
   // 隐藏旧列表
@@ -233,7 +232,29 @@ const handleContextMenu = (
     chartEditStore.setRightMenuShow(true)
   })
 }
-
+// 右键事件
+const optionsHandle = (
+  targetList: MenuOptionsItemType[],
+  allList: MenuOptionsItemType[],
+  targetInstance: CreateComponentType
+) => {
+  // 多选处理
+  if (chartEditStore.getTargetChart.selectId.length > 1) {
+    return allList.filter(i => [MenuEnum.GROUP, MenuEnum.DELETE].includes(i.key as MenuEnum))
+  }
+  const statusMenuEnums: MenuEnum[] = []
+  if (targetInstance.status.lock) {
+    statusMenuEnums.push(MenuEnum.LOCK)
+  } else {
+    statusMenuEnums.push(MenuEnum.UNLOCK)
+  }
+  if (targetInstance.status.hide) {
+    statusMenuEnums.push(MenuEnum.HIDE)
+  } else {
+    statusMenuEnums.push(MenuEnum.SHOW)
+  }
+  return targetList.filter(i => !statusMenuEnums.includes(i.key as MenuEnum))
+}
 /**
  * * 右键hook
  * @param menuConfig
@@ -268,6 +289,7 @@ export const useContextMenu = () => {
     menuOptions,
     defaultOptions,
     defaultMultiSelectOptions,
+    optionsHandle,
     handleContextMenu,
     onClickOutSide,
     handleMenuSelect,

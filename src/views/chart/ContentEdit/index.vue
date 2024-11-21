@@ -48,7 +48,7 @@
         </edit-range>
       </div>
     </edit-rule> -->
-    <TresCanva @click="TresCanvaClick" />
+    <TresCanva @click="TresCanvaClick" @rightClick="rightClickHandle" />
     <!-- 工具栏 -->
     <template #aside>
       <edit-tools></edit-tools>
@@ -91,7 +91,7 @@ import { EditTools } from './components/EditTools'
 
 const TresCanva = defineAsyncComponent(() => import('@/components/TresCanva/index.vue'))
 const chartEditStore = useChartEditStore()
-const { handleContextMenu } = useContextMenu()
+const { handleContextMenu ,optionsHandle} = useContextMenu()
 
 // 编辑时注入scale变量，消除警告
 provide(SCALE_KEY, null)
@@ -104,29 +104,11 @@ useLayout(async () => {})
 // 点击事件
 const { mouseenterHandle, mouseleaveHandle, mousedownHandle, mouseClickHandle } = useMouseHandle()
 
-// 右键事件
-const optionsHandle = (
-  targetList: MenuOptionsItemType[],
-  allList: MenuOptionsItemType[],
-  targetInstance: CreateComponentType
-) => {
-  // 多选处理
-  if (chartEditStore.getTargetChart.selectId.length > 1) {
-    return allList.filter(i => [MenuEnum.GROUP, MenuEnum.DELETE].includes(i.key as MenuEnum))
-  }
-  const statusMenuEnums: MenuEnum[] = []
-  if (targetInstance.status.lock) {
-    statusMenuEnums.push(MenuEnum.LOCK)
-  } else {
-    statusMenuEnums.push(MenuEnum.UNLOCK)
-  }
-  if (targetInstance.status.hide) {
-    statusMenuEnums.push(MenuEnum.HIDE)
-  } else {
-    statusMenuEnums.push(MenuEnum.SHOW)
-  }
-  return targetList.filter(i => !statusMenuEnums.includes(i.key as MenuEnum))
+const rightClickHandle = (c: any) => {
+  const { e, item } = c
+  handleContextMenu(e, item, optionsHandle)
 }
+
 // watch(()=>chartEditStore.getComponentList,(e)=>{
 //   state.config = e
 //   console.log(state.config,'配置更新')

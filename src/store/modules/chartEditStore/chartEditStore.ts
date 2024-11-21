@@ -470,7 +470,6 @@ export const useChartEditStore = defineStore({
     //设置option
     setComponentList(id: String, newData: CreateComponentType | CreateComponentGroupType, key: string = 'option') {
       const index = this.getComponentList.findIndex(item => id == item.id)
-      console.log(index, id, 999)
       this.componentList[index][key] = { ...this.componentList[index][key], ...newData }
     },
     // * 设置页面样式属性
@@ -1004,9 +1003,10 @@ export const useChartEditStore = defineStore({
     // * 隐藏
     setHide(status: boolean = true, isHistory: boolean = true) {
       try {
+        this.transformControlsState.enabled = false
+        this.transformRef = null
         // 暂不支持多选
         if (this.getTargetChart.selectId.length > 1) return
-
         loadingStart()
         const index: number = this.fetchTargetIndex()
         if (index !== -1) {

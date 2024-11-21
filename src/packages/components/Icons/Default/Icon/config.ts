@@ -16,5 +16,6 @@ export default class Config extends PublicConfigClass implements CreateComponent
   public key = IconConfig.key
   public attr = { ...chartInitConfig, w: 64, h: 64, zIndex: 1 }
   public chartConfig = cloneDeep(IconConfig)
+  public type = 'Html'
   public option = cloneDeep(option)
 }
