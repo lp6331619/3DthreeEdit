@@ -155,7 +155,7 @@ export const useChartEditStore = defineStore({
       // distance: 25,
 
       minDistance: 1, //摄像机最小距离
-      maxDistance: 100, //摄像机最大距离
+      maxDistance: 400, //摄像机最大距离
       enableDamping: true, //是否启用阻尼
       dampingFactor: 0.05, //阻尼系数
       autoRotate: false, //是否自动旋转

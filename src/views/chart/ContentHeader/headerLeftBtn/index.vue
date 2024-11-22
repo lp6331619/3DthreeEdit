@@ -66,8 +66,9 @@
 
 <script setup lang="ts">
 import { toRefs,Ref, ref,nextTick, reactive, computed } from 'vue'
-import { renderIcon, goDialog,readFile, goHome,JSONParse } from '@/utils'
 import { icon } from '@/plugins'
+import { createComponent } from '@/packages'
+import { CreateComponentType, CreateComponentGroupType, PickCreateComponentType } from '@/packages/index.d'
 import { useRemoveKeyboard } from '../../hooks/useKeyboard.hook'
 import { UploadCustomRequestOptions } from 'naive-ui'
 import { FileTypeEnum } from '@/enums/fileTypeEnum'
@@ -77,6 +78,7 @@ import { HistoryStackEnum } from '@/store/modules/chartHistoryStore/chartHistory
 import { useSync } from '@/views/chart/hooks/useSync.hook'
 import { useChartLayoutStore } from '@/store/modules/chartLayoutStore/chartLayoutStore'
 import { ChartLayoutStoreEnum } from '@/store/modules/chartLayoutStore/chartLayoutStore.d'
+import { loadingStart, loadingFinish, loadingError, setComponentPosition, renderIcon,JSONParse, goDialog,readFile, goHome  } from '@/utils'
 const { LayersIcon, BarChartIcon, PrismIcon, HomeIcon, ArrowBackIcon, ArrowForwardIcon,DownloadIcon ,ShareIcon} = icon.ionicons5
 const { setItem } = useChartLayoutStore()
 const { getLayers, getCharts, getDetails } = toRefs(useChartLayoutStore())
@@ -147,20 +149,14 @@ const importUploadFileListRef = ref()
     return true
   }
   // 上传-导入
-  const importCustomRequest = (options: UploadCustomRequestOptions) => {
+  const importCustomRequest = async(options: UploadCustomRequestOptions) => {
     const { file } = options
-    nextTick(() => {
+    nextTick(async() => {
       if (file.file) {
-        readFile(file.file).then((fileData: any) => {
+        // readFile(file.file).then((fileData: any) => {
           const [f,type] =file.name.split('.')
-          chartEditStore.addComponentList({
-            id:f,
-            name:f,
-            type:'primitive',
-            key:f,
-            meshConfig:fileData,
-            chartConfig:{
-              "key": f,
+          const dropData ={
+              "key": 'Mesh',
               "chartKey": "V"+f,
               "conKey": "VC"+f,
               "title": f,
@@ -170,8 +166,13 @@ const importUploadFileListRef = ref()
               "chartFrame": "common",
               image:'123'
             }
-          }, false, true)
-        })
+          let newComponent: CreateComponentType = await createComponent(dropData)
+          newComponent.meshConfig = URL.createObjectURL(file.file)
+          setComponentPosition(newComponent, 0,0)
+          chartEditStore.addComponentList(newComponent, false, true)
+          chartEditStore.setTargetSelectChart(newComponent.id)
+          loadingFinish()
+        // })
       } else {
         window['$message'].error('导入失败，请检查数据或联系管理员！')
       }
