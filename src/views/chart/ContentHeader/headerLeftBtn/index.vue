@@ -164,10 +164,11 @@ const importUploadFileListRef = ref()
               "categoryName": "模型",
               "package": "Graphic",
               "chartFrame": "common",
-              image:'123'
+              image:''
             }
           let newComponent: CreateComponentType = await createComponent(dropData)
           newComponent.meshConfig = URL.createObjectURL(file.file)
+          newComponent.type = 'primitive'
           setComponentPosition(newComponent, 0,0)
           chartEditStore.addComponentList(newComponent, false, true)
           chartEditStore.setTargetSelectChart(newComponent.id)

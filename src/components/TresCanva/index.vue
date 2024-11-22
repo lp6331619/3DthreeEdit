@@ -49,14 +49,14 @@
         :position="subMesh.option?.position || [0, 0, 0] "
         :ref="(el)=> subMesh.el=el "
         >
-        <Html key=""v-bind="htmlState">
+        <Html v-bind="htmlState">
           <component
             class="edit-content-chart"
             :class="animationsClass(subMesh.styles.animations)"
             :is="subMesh.chartConfig.chartKey"
             :chartConfig="subMesh"
-             @click="clickMesh(subMesh,index,$event)"
-             @contextmenu.prevent="clickRight($event, subMesh,index)" 
+            @click="clickMesh(subMesh,index,$event)"
+            @contextmenu.prevent="clickRight($event, subMesh,index)" 
             :style="{
               ...useSizeStyle(subMesh.attr),
               ...getTransformStyle(subMesh.styles)
@@ -64,7 +64,11 @@
           ></component>
         </Html>
       </TresGroup >
-      <primitive v-else-if="subMesh.type == 'primitive'" :object="objectBox(subMesh)" v-bind="subMesh.option" />
+      <primitive v-else-if="subMesh.type == 'primitive' && gltfScene" :object="objectBox(subMesh)" v-bind="subMesh.option" >
+        <!-- <ModelLoad :url="subMesh.meshConfig" /> -->
+      </primitive>
+      <!-- <GLTFModel v-else-if="subMesh.type == 'GLTFModel'" :ref="(el)=> subMesh.el=el.instance " @click="clickMesh(subMesh,index,$event)"  @contextmenu="clickRight($event, subMesh,index)" 
+         :path="subMesh.meshConfig" /> -->
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
     </Suspense>
@@ -77,16 +81,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, toRef, watchEffect, nextTick, onMounted, watch, onUpdated, shallowRef } from 'vue'
+import { ref, reactive,defineAsyncComponent, computed, toRef, watchEffect, nextTick, onMounted, watch, onUpdated, shallowRef } from 'vue'
 import { useRenderLoop, useTresContext, vLightHelper } from '@tresjs/core'
 import { initEvents, registerEvent, unregisterEvent, updateEvents } from '@/utils/event'
-import { OrbitControls, TransformControls, CameraControls, Stars, Sky, useGLTF, StatsGl, Html, Stats } from '@tresjs/cientos'
+import { OrbitControls, TransformControls, CameraControls, Stars, Sky, useGLTF, StatsGl, Html, Stats ,GLTFModel} from '@tresjs/cientos'
 import { throttle, deepClone } from '@/utils'
 import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore'
 import { storeToRefs } from 'pinia'
 import { defaultOption, defaultChildren } from '@/settings/designSetting'
 import { useComponentStyle, useSizeStyle } from '@/views/chart/contentEdit/hooks/useStyle.hook'
 import { animationsClass, getFilterStyle, getTransformStyle, getBlendModeStyle, colorCustomMerge } from '@/utils'
+const ModelLoad = defineAsyncComponent(() => import('@/components/ModelLoad/index.vue'));
 
 const chartEditStore = useChartEditStore()
 const { transformRef } = storeToRefs(chartEditStore)
@@ -165,10 +170,17 @@ watch(() => componentList, (e) => {
 watch(() => lightSetting, (e) => {
   config.lightSetting = deepClone(e || [])
 }, { deep: true, immediate: true })
-
+const gltfScene = ref<any>(false)
 const objectBox = async (item: any) => {
-  // const { nodes } = await useGLTF(JSON.parse(item.meshConfig))
-  // return nodes
+  try {
+    const { scene } = await useGLTF(item.meshConfig)
+    gltfScene.value = true
+    console.log('Loaded scene:', scene) // 打印加载的场景
+    return scene
+  } catch (error) {
+    console.error('Error loading GLTF:', error)
+    return null
+  }
 }
 
 const { onLoop, onBeforeLoop, onAfterLoop, pause, resume } = useRenderLoop()
@@ -176,6 +188,7 @@ const { onLoop, onBeforeLoop, onAfterLoop, pause, resume } = useRenderLoop()
 // 选择模型移动
 const clickMesh = (item: any, i: number, e: any) => {
   transformRef.value = item.el
+  console.log(item,444)
   config.currentIndex = i
   transformControlsState.enabled = true
   emits('click', {
@@ -186,6 +199,14 @@ const clickMesh = (item: any, i: number, e: any) => {
 }
 // 点击右键
 const clickRight = (e: any, item: any,i: number) => {
+  console.log(e,666)
+  if (e && typeof e.preventDefault === 'function') {
+       e.preventDefault();
+     }
+     if (e && typeof e.stopPropagation === 'function') {
+       e.stopPropagation();
+     }
+  return
   emits('rightClick', {
     e: e,
     item: item
