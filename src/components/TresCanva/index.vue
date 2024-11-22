@@ -24,14 +24,13 @@
       :shadow-camera-bottom="-10"
     />
     <!-- 灯光 -->
-    <component v-for="(item,i) in config.lightSetting" v-light-helper :key="i" ref="lightRef"  :is="item.type" v-bind="item.config" />
-   
+    <component v-for="(item,i) in config.lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
     <Suspense v-for="(subMesh, index) in config.componentList" :key="subMesh.key" >
       <!-- 添加的mesh对象 -->
       <TresMesh
         v-if="subMesh.type == 'TresMesh' && !subMesh.status.hide"
         :ref="(el)=>subMesh.el=el "
-        v-bind="subMesh.type=='Html'?defaultOption : subMesh.option"
+        v-bind="subMesh.option"
         cast-shadow 
         :name="subMesh.id + index"
         :onlyId="subMesh.id"
@@ -41,7 +40,7 @@
         @context-menu="clickRight($event,subMesh,index)"
       >
         <!-- 其他配置 --> 
-        <component v-for="(item, i) in subMesh.children || defaultChildren" :key="item.key" :is="'Tres'+item.type" v-bind="item.config"  />
+        <component v-for="(item, i) in subMesh?.children"  :key="item.key" :is="'Tres'+item.type" v-bind="item.config"  />
       </TresMesh>
       <!-- html渲染 -->
       <TresGroup  
@@ -72,7 +71,7 @@
     <!-- 变换控制器 -->
     <TransformControls v-if="transformControlsState.enabled" :object="transformRef" v-bind="transformControlsState" 
      @dragging="ControlsStateMouseDown"/>
-    <StatsGl />
+    <!-- <StatsGl /> -->
   </TresCanvas>
   </div>
 </template>
