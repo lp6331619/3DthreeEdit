@@ -200,7 +200,7 @@ const clickRight = (e: any, item: any,i: number) => {
   })
 }
 
-
+// 变换控制器
 const ControlsStateMouseDown = (isMove:boolean)=>{
   if(!transformRef.value || isMove) return
   const item = config.componentList[config.currentIndex]
@@ -228,7 +228,6 @@ onAfterLoop((res: any) => {
 const changeColor = throttle((ev: any) => {
   ev.object.material.color.set('#DFFF45')
 }, 200)
-
 function onPointerEnter(ev: any) {
   if (ev) {
     changeColor(ev)

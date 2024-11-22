@@ -121,8 +121,12 @@ const keyRecordHandle = () => {
     if ([17, 32].includes(keyCode) && window.$KeyboardActive) {
       setKeyboardDressShow(e.keyCode)
       switch (keyCode) {
-        case 17: window.$KeyboardActive.ctrl = true; break
-        case 32: window.$KeyboardActive.space = true; break
+        case 17:
+          window.$KeyboardActive.ctrl = true
+          break
+        case 32:
+          window.$KeyboardActive.space = true
+          break
       }
     }
   }
@@ -134,8 +138,12 @@ const keyRecordHandle = () => {
     if ([17, 32].includes(keyCode) && window.$KeyboardActive) {
       setKeyboardDressShow()
       switch (keyCode) {
-        case 17: window.$KeyboardActive.ctrl = false; break
-        case 32: window.$KeyboardActive.space = false; break
+        case 17:
+          window.$KeyboardActive.ctrl = false
+          break
+        case 32:
+          window.$KeyboardActive.space = false
+          break
       }
     }
   }
@@ -148,73 +156,169 @@ export const useAddKeyboard = () => {
     switch (e) {
       // ct+↑
       case keyboardValue.up:
-        keymaster(e, throttle(() => { chartEditStore.setMove(MenuEnum.ARROW_UP); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setMove(MenuEnum.ARROW_UP)
+            return false
+          }, throttleTime)
+        )
+        break
       // ct+→
       case keyboardValue.right:
-        keymaster(e, throttle(() => { chartEditStore.setMove(MenuEnum.ARROW_RIGHT); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setMove(MenuEnum.ARROW_RIGHT)
+            return false
+          }, throttleTime)
+        )
+        break
       // ct+↓
       case keyboardValue.down:
-        keymaster(e, throttle(() => { chartEditStore.setMove(MenuEnum.ARROW_DOWN); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setMove(MenuEnum.ARROW_DOWN)
+            return false
+          }, throttleTime)
+        )
+        break
       // ct+←
       case keyboardValue.left:
-        keymaster(e, throttle(() => { chartEditStore.setMove(MenuEnum.ARROW_LEFT); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setMove(MenuEnum.ARROW_LEFT)
+            return false
+          }, throttleTime)
+        )
+        break
 
       // 删除 delete
       case keyboardValue.delete:
-        keymaster(e, debounce(() => { chartEditStore.removeComponentList(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          debounce(() => {
+            chartEditStore.removeComponentList()
+            return false
+          }, throttleTime)
+        )
+        break
       // 复制 ct+v
       case keyboardValue.copy:
-        keymaster(e, debounce(() => { chartEditStore.setCopy(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          debounce(() => {
+            chartEditStore.setCopy()
+            return false
+          }, throttleTime)
+        )
+        break
       // 剪切 ct+x
       case keyboardValue.cut:
-        keymaster(e, debounce(() => { chartEditStore.setCut(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          debounce(() => {
+            chartEditStore.setCut()
+            return false
+          }, throttleTime)
+        )
+        break
       // 粘贴 ct+v
       case keyboardValue.parse:
-        keymaster(e, throttle(() => { chartEditStore.setParse(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setParse()
+            return false
+          }, throttleTime)
+        )
+        break
 
       // 撤回 ct+z
       case keyboardValue.back:
-        keymaster(e, throttle(() => { chartEditStore.setBack(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setBack()
+            return false
+          }, throttleTime)
+        )
+        break
       // 前进 ct+sh+z
       case keyboardValue.forward:
-        keymaster(e, throttle(() => { chartEditStore.setForward(); return false }, throttleTime))
-        break;
-      
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setForward()
+            return false
+          }, throttleTime)
+        )
+        break
+
       // 创建分组 ct+g
       case keyboardValue.group:
-        keymaster(e, throttle(() => { chartEditStore.setGroup(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setGroup()
+            return false
+          }, throttleTime)
+        )
+        break
       // 解除分组 ct+sh+g
       case keyboardValue.unGroup:
-        keymaster(e, throttle(() => { chartEditStore.setUnGroup(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setUnGroup()
+            return false
+          }, throttleTime)
+        )
+        break
 
       // 锁定 ct+l
       case keyboardValue.lock:
-        keymaster(e, throttle(() => { chartEditStore.setLock(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setLock()
+            return false
+          }, throttleTime)
+        )
+        break
       // 解除锁定 ct+sh+l
       case keyboardValue.unLock:
-        keymaster(e, throttle(() => { chartEditStore.setUnLock(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setUnLock()
+            return false
+          }, throttleTime)
+        )
+        break
 
       // 隐藏 ct+h
       case keyboardValue.hide:
-        keymaster(e, throttle(() => { chartEditStore.setHide(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setHide()
+            return false
+          }, throttleTime)
+        )
+        break
       // 解除隐藏 ct+sh+h
       case keyboardValue.show:
-        keymaster(e, throttle(() => { chartEditStore.setShow(); return false }, throttleTime))
-        break;
+        keymaster(
+          e,
+          throttle(() => {
+            chartEditStore.setShow()
+            return false
+          }, throttleTime)
+        )
+        break
     }
   }
   winKeyList.forEach((key: string) => {
@@ -229,8 +333,8 @@ export const useAddKeyboard = () => {
 
 // 卸载监听事件
 export const useRemoveKeyboard = () => {
-  document.onkeydown = () => {};
-  document.onkeyup = () => {};
+  document.onkeydown = () => {}
+  document.onkeyup = () => {}
 
   winKeyList.forEach((key: string) => {
     keymaster.unbind(key)

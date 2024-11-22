@@ -185,7 +185,7 @@ export enum PackagesCategoryEnum {
 // 包分类名称
 export enum PackagesCategoryName {
   CHARTS = '图表',
-  INFORMATIONS = '模型库',
+  INFORMATIONS = '信息库',
   TABLES = '模型库',
 
   GRAPHIC = '模型库',

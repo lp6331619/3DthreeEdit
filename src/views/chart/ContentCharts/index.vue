@@ -30,6 +30,7 @@
           ></charts-option-content>
         </div>
       </div>
+      
     </aside>
   </content-box>
 </template>

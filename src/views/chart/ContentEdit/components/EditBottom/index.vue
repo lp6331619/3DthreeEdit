@@ -6,13 +6,13 @@
       <!-- CTRL按键触发展示 -->
       <n-text id="keyboard-dress-show" depth="3"></n-text>
     </n-space>
+    <edit-shortcut-key />
 
     <n-space class="bottom-ri">
       <!-- 快捷键提示 -->
-      <edit-shortcut-key />
-
+      
       <!-- 缩放比例 -->
-      <n-select
+      <!-- <n-select
         ref="selectInstRef"
         class="scale-btn"
         v-model:value="filterValue"
@@ -20,10 +20,10 @@
         :disabled="lockScale"
         :options="filterOptions"
         @update:value="selectHandle"
-      ></n-select>
+      ></n-select> -->
 
       <!-- 锁定缩放 -->
-      <n-tooltip trigger="hover">
+      <!-- <n-tooltip trigger="hover">
         <template #trigger>
           <n-button @click="lockHandle" text>
             <n-icon class="lock-icon" :class="{ color: lockScale }" size="18" :depth="2">
@@ -33,10 +33,10 @@
           </n-button>
         </template>
         <span>{{ lockScale ? '解锁' : '锁定' }}当前比例</span>
-      </n-tooltip>
+      </n-tooltip> -->
 
       <!-- 拖动 -->
-      <n-slider
+      <!-- <n-slider
         class="scale-slider"
         v-model:value="sliderValue"
         :default-value="50"
@@ -47,7 +47,7 @@
         :disabled="lockScale"
         :marks="sliderMaks"
         @update:value="sliderHandle"
-      ></n-slider>
+      ></n-slider> -->
     </n-space>
   </div>
 </template>

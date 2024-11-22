@@ -191,8 +191,8 @@ const handleContextMenu = (
   // 挑选选项列表
   pickOptionsList?: MenuEnum[]
 ) => {
-  // e.stopPropagation()
-  // e.preventDefault()
+  e.stopPropagation()
+  e.preventDefault()
   let target = e.target
   while (target instanceof SVGElement) {
     target = target.parentNode

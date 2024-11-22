@@ -22,7 +22,7 @@ const imagesModules: Record<string, { default: string }> = import.meta.glob('../
 export let packagesList: PackagesType = {
   // [PackagesCategoryEnum.CHARTS]: ChartList,
   [PackagesCategoryEnum.GRAPHIC]: Graphic,
-  // [PackagesCategoryEnum.INFORMATIONS]: InformationList,
+  [PackagesCategoryEnum.INFORMATIONS]: InformationList,
   // [PackagesCategoryEnum.TABLES]: TableList,
   [PackagesCategoryEnum.DECORATES]: DecorateList,
   [PackagesCategoryEnum.ENVIRONMENT]: Environment,

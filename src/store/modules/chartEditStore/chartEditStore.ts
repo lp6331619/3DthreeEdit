@@ -816,20 +816,20 @@ export const useChartEditStore = defineStore({
     setMove(keyboardValue: MenuEnum) {
       const index = this.fetchTargetIndex()
       if (index === -1) return
-      const attr = this.getComponentList[index].attr
-      const distance = settingStore.getChartMoveDistance
+      const option = this.getComponentList[index].option
+      const distance = settingStore.getChartMoveDistance / 10
       switch (keyboardValue) {
         case MenuEnum.ARROW_UP:
-          attr.y -= distance
+          option.position[1] += distance
           break
         case MenuEnum.ARROW_RIGHT:
-          attr.x += distance
+          option.position[0] += distance
           break
         case MenuEnum.ARROW_DOWN:
-          attr.y += distance
+          option.position[1] -= distance
           break
         case MenuEnum.ARROW_LEFT:
-          attr.x -= distance
+          option.position[0] -= distance
           break
       }
     },

@@ -28,4 +28,5 @@ export default class Config extends PublicConfigClass implements CreateComponent
   public chartConfig = cloneDeep(InputsDateConfig)
   public interactActions = interactActions
   public option = cloneDeep(option)
+  public type = 'Html'
 }
