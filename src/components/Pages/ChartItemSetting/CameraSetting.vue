@@ -51,7 +51,7 @@
           v-model:value="config.maxDistance"
           :step="1"
           :min="0"
-          :max="999"
+          :max="9999"
         ></n-slider>
       </setting-item>
       <setting-item >

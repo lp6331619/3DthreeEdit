@@ -6,11 +6,9 @@
       <!-- CTRL按键触发展示 -->
       <n-text id="keyboard-dress-show" depth="3"></n-text>
     </n-space>
-    <edit-shortcut-key />
-
     <n-space class="bottom-ri">
       <!-- 快捷键提示 -->
-      
+      <edit-shortcut-key />
       <!-- 缩放比例 -->
       <!-- <n-select
         ref="selectInstRef"
@@ -26,8 +24,8 @@
       <!-- <n-tooltip trigger="hover">
         <template #trigger>
           <n-button @click="lockHandle" text>
-            <n-icon class="lock-icon" :class="{ color: lockScale }" size="18" :depth="2">
-              <lock-closed-outline-icon v-if="lockScale"></lock-closed-outline-icon>
+            <n-icon class="lock-icon" :class="{ color: cameraConfig.enableZoom }" size="18" :depth="2">
+              <lock-closed-outline-icon v-if="cameraConfig.enableZoom"></lock-closed-outline-icon>
               <lock-open-outline-icon v-else></lock-open-outline-icon>
             </n-icon>
           </n-button>
@@ -73,7 +71,7 @@ const chartLayoutStore = useChartLayoutStore()
 const chartEditStore = useChartEditStore()
 const { lockScale, scale } = toRefs(chartEditStore.getEditCanvas)
 const selectInstRef = ref<SelectInst | null>(null)
-
+const cameraConfig = chartEditStore.getCameraConfig
 // 缩放选项
 let filterOptions = [
   {
@@ -94,7 +92,7 @@ let filterOptions = [
   },
   {
     label: '自适应',
-    value: 0
+    value: 25
   }
 ]
 
@@ -103,18 +101,22 @@ const filterValue = ref('')
 
 // 用户自选择
 const selectHandle = (v: number) => {
-  selectInstRef.value?.blur()
-  if (v === 0) {
-    chartLayoutStore.setItemUnHandle(ChartLayoutStoreEnum.RE_POSITION_CANVAS, true)
-    chartEditStore.computedScale()
-    return
-  }
-  chartEditStore.setScale(v / 100)
+  // selectInstRef.value?.blur()
+  // if (v === 0) {
+  //   chartLayoutStore.setItemUnHandle(ChartLayoutStoreEnum.RE_POSITION_CANVAS, true)
+  //   chartEditStore.computedScale()
+  //   return
+  // }
+  console.log(v,333)
+  cameraConfig.distance = v
+  // chartEditStore.setScale(v / 100)
+  
 }
 
 // 点击锁处理
 const lockHandle = () => {
-  chartEditStore.setEditCanvas(EditCanvasTypeEnum.LOCK_SCALE, !lockScale.value)
+  cameraConfig.enableZoom = !cameraConfig.enableZoom
+  // chartEditStore.setEditCanvas(EditCanvasTypeEnum.LOCK_SCALE, !lockScale.value)
 }
 
 // 拖动
@@ -134,9 +136,9 @@ const sliderMaks = reactive({
 
 // 监听 scale 变化
 watchEffect(() => {
-  const value = (scale.value * 100).toFixed(0)
-  filterValue.value = `${value}%`
-  sliderValue.value = parseInt(value)
+  // const value = (scale.value * 100).toFixed(0)
+  filterValue.value = `${cameraConfig.distance}%`
+  // sliderValue.value = parseInt(value)
 })
 </script>
 
@@ -153,8 +155,6 @@ $max-width: 670px;
   align-items: center;
   justify-content: space-between;
   .bottom-ri {
-    position: relative;
-    top: 15px;
     .lock-icon {
       padding-top: 4px;
       &.color {

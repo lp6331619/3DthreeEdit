@@ -152,10 +152,10 @@ export const useChartEditStore = defineStore({
       // far: 2000, // 摄像机视锥体远端面
       // zoom: 1,
       // lookAt: [100, 10, 20],
-      // distance: 25,
+      distance: 25,
 
       minDistance: 1, //摄像机最小距离
-      maxDistance: 400, //摄像机最大距离
+      maxDistance: 900, //摄像机最大距离
       enableDamping: true, //是否启用阻尼
       dampingFactor: 0.05, //阻尼系数
       autoRotate: false, //是否自动旋转

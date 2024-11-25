@@ -1,13 +1,12 @@
 <template>
-  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{config.componentList}}</div> -->
-  <div class="tres-canvas-container">  
-  <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef" @click="(e)=>console.log(e,'click')">
+  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{config.componentList[0].attr}} </div> -->
+  <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef">
     <!-- 轴 -->
-    <TresAxesHelper :args="[10]" />
+    <TresAxesHelper :args="[100]" />
     <!-- 控制 -->
-    <OrbitControls make-default  v-bind="cameraConfig" />
+    <OrbitControls make-default  v-bind="cameraConfig" @end="OrbitControlsEnd"/>
     <!-- 坐标格辅助对象 -->
-    <TresGridHelper :position-y="0.1" />
+    <TresGridHelper  :args="[1000,100]" />
     <!-- 透视摄像机 -->
     <TresPerspectiveCamera ref="cameraRef" :position="[10,10,10]" :look-at="[0, 0, 0]"/>
     <!-- <CameraControls :camera="cameraRef" ref="controlsRef" v-bind="cameraConfig" make-default  /> -->
@@ -64,20 +63,22 @@
           ></component>
         </Html>
       </TresGroup >
-      <primitive v-else-if="subMesh.type == 'primitive' " :object="objectBox(subMesh)" v-bind="subMesh.option" >
+      <primitive v-else-if="subMesh.type == 'primitive' && !subMesh.status.hide" :object="objectBox(subMesh)" v-bind="subMesh.option" >
         <!-- <ModelLoad :url="subMesh.meshConfig" /> -->
       </primitive>
-      <GLTFModel v-else-if="subMesh.type == 'GLTFModel'" :ref="(el)=> subMesh.el=el.instance " @click="clickMesh(subMesh,index,$event)"  @contextmenu="clickRight($event, subMesh,index)" 
-         :path="subMesh.meshConfig" />
+      <TresGroup  v-else-if="subMesh.type == 'GLTFModel' && !subMesh.status.hide" :ref="(el)=> subMesh.el=el " v-bind="subMesh.option">
+        <GLTFModel  @click="clickMesh(subMesh,index,$event)" 
+          :path="subMesh.meshConfig" />
+      </TresGroup>
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
     </Suspense>
     <!-- 变换控制器 -->
     <TransformControls v-if="transformControlsState.enabled" :object="transformRef" v-bind="transformControlsState" 
      @dragging="ControlsStateMouseDown"/>
-    <!-- <StatsGl /> -->
+    <Stats />
+    <!-- <primitive :object="scene" :scale="5" ref="modelRef" :position="[0, -2, 0]" /> -->
   </TresCanvas>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -86,13 +87,13 @@ import { useRenderLoop, useTresContext, vLightHelper } from '@tresjs/core'
 import { initEvents, registerEvent, unregisterEvent, updateEvents } from '@/utils/event'
 import { OrbitControls, TransformControls, CameraControls, Stars, Sky, useGLTF, StatsGl, Html, Stats ,GLTFModel} from '@tresjs/cientos'
 import { throttle, deepClone } from '@/utils'
+import { Raycaster, Vector2 } from 'three'
 import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore'
 import { storeToRefs } from 'pinia'
 import { defaultOption, defaultChildren } from '@/settings/designSetting'
 import { useComponentStyle, useSizeStyle } from '@/views/chart/contentEdit/hooks/useStyle.hook'
 import { animationsClass, getFilterStyle, getTransformStyle, getBlendModeStyle, colorCustomMerge } from '@/utils'
 const ModelLoad = defineAsyncComponent(() => import('@/components/ModelLoad/index.vue'));
-
 const chartEditStore = useChartEditStore()
 const { transformRef } = storeToRefs(chartEditStore)
 
@@ -133,6 +134,7 @@ const config = reactive<{
 
 // 更新配置
 watch(() => componentList, (e) => {
+  config.componentList = deepClone(e || [])
   const min = 1;
   const max = 100;
   const randomInteger = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -140,29 +142,20 @@ watch(() => componentList, (e) => {
     return {
       ...item,
       option:{position:[0,0,0], ...item.option},
-      key: item.id + randomInteger
+      key: item.type=='Html' ? item.id + randomInteger : item.id
     }
   });
-  // 确保在更新 TransformControls 之前，组件已经被渲染
-  if (config.currentIndex !== null) {
-    const currentItem = config.componentList[config.currentIndex];
-    if (currentItem?.type === 'Html') {
-      transformControlsState.enabled = false;
-      nextTick(() => {
-        if (currentItem.el?.instance) {
-          transformRef.value = currentItem.el.instance;
-          transformControlsState.enabled = true;
-        }
-      });
-    } else if (currentItem) {
-      nextTick(() => {
-      if (currentItem?.el) {
-          transformRef.value = currentItem.el;
-          transformControlsState.enabled = true;
-        }
-      });
+  // 强制更新Html类型的数据，他不更新
+  const currentItem = config.componentList[config.currentIndex];
+  if(currentItem?.type !== 'Html') return 
+  // 这里处理变换控制器 html类型的问题，确保在更新 TransformControls 之前，组件已经被渲染
+  transformControlsState.enabled = false;
+  nextTick(() => {
+    if (currentItem.el?.instance) {
+      transformRef.value = currentItem.el.instance;
+      transformControlsState.enabled = true;
     }
-  }
+  });
   console.log(config.componentList, '配置更新了');
 }, { deep: true, immediate: true });
 
@@ -173,22 +166,24 @@ watch(() => lightSetting, (e) => {
 const gltfScene = ref<any>(false)
 const objectBox = async (item: any) => {
   try {
-    // const res = await useGLTF(item.meshConfig)
-    const { scene, nodes } = await useGLTF('https://a.amap.com/jsapi_demos/static/gltf-online/shanghai/scene.gltf')
-    // const { scene,nodes} = res
-    return scene
+    console.log(item,444)
+
+    const res = await useGLTF(item.meshConfig)
+    // const { scene, nodes } = await useGLTF('https://a.amap.com/jsapi_demos/static/gltf-online/shanghai/scene.gltf')
+    // gltfScene.value = scene
+    return res.scene
   } catch (error) {
     console.error('Error loading GLTF:', error)
     return null
   }
 }
-
 const { onLoop, onBeforeLoop, onAfterLoop, pause, resume } = useRenderLoop()
-
+const raycaster = new Raycaster()
+const mouse = new Vector2()
 // 选择模型移动
 const clickMesh = (item: any, i: number, e: any) => {
-  transformRef.value = item.el
-  console.log(item,444)
+  // const {object} = e
+  transformRef.value =  item.el
   config.currentIndex = i
   transformControlsState.enabled = true
   emits('click', {
@@ -199,18 +194,11 @@ const clickMesh = (item: any, i: number, e: any) => {
 }
 // 点击右键
 const clickRight = (e: any, item: any,i: number) => {
-  console.log(e,666)
-  if (e && typeof e.preventDefault === 'function') {
-       e.preventDefault();
-     }
-     if (e && typeof e.stopPropagation === 'function') {
-       e.stopPropagation();
-     }
-  return
   emits('rightClick', {
     e: e,
     item: item
   })
+  // const {object} = e
   transformRef.value = item.el
   config.currentIndex = i
   transformControlsState.enabled = true
@@ -234,17 +222,19 @@ const ControlsStateMouseDown = (isMove:boolean)=>{
       const {w,h} = item.attr
       useChartEditStore().setComponentList(item.id,{w:w*x,h:h*y},'attr')
     }
-   }
+  }
   useChartEditStore().setComponentList(item.id,{position:[...position.toArray()],scale:[...scale.toArray()],rotation:[...rotation.toArray()]})
 }
 
+//监听控制器
+const OrbitControlsEnd = (e)=>{
+  const {getDistance} = e
+  cameraConfig.distance = getDistance()
+}
 onLoop(({ delta, elapsed }) => {
   // updateEvents(elapsed * 1000, delta * 1000)
 })
-
-onAfterLoop((res: any) => {
-})
-
+onAfterLoop((res: any) => {})
 // 鼠标移入到模型上时，改变模型颜色
 const changeColor = throttle((ev: any) => {
   ev.object.material.color.set('#DFFF45')
@@ -275,10 +265,4 @@ onMounted(() => { });
 </script>
 
 <style>
-
-.tres-canvas-container{
-  width: 100%;
-  height: 100%;
-  transform: translateZ(0);
-}
 </style>

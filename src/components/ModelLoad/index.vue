@@ -12,22 +12,24 @@ const props = defineProps({
 })
 const loadModel = async (url:string) => {
   const gltf = await useGLTF(url)
-  gltf.scene?.traverse((child:any) => {
-    console.log(child,999)
-    if (child.isMesh) {
-      // 为每个 mesh 添加事件监听器
-      // child.on('click', (event) => {
-      //   event.stopPropagation()
-      //   console.log('Mesh clicked:', child)
-      // })
-      modelGroup.value.add(child)
-    }
-  })
+  console.log(gltf,888)
+  if(gltf.scene){
+    gltf.scene?.traverse((child:any) => {
+      console.log(child,999)
+      if (child.isMesh) {
+        // 为每个 mesh 添加事件监听器
+        // child.on('click', (event) => {
+        //   event.stopPropagation()
+        //   console.log('Mesh clicked:', child)
+        // })
+        modelGroup.value.add(child)
+      }
+    })
+  }
   // modelGroup.value.updateMatrixWorld()
   console.log(modelGroup.value,888)
 }
 watch(()=>props.url,async ()=>{
-  console.log(props.url,888)
   if(props.url){
     await loadModel(props.url)
   }
