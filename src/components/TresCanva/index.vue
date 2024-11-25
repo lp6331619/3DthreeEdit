@@ -64,11 +64,11 @@
           ></component>
         </Html>
       </TresGroup >
-      <primitive v-else-if="subMesh.type == 'primitive' && gltfScene" :object="objectBox(subMesh)" v-bind="subMesh.option" >
+      <primitive v-else-if="subMesh.type == 'primitive' " :object="objectBox(subMesh)" v-bind="subMesh.option" >
         <!-- <ModelLoad :url="subMesh.meshConfig" /> -->
       </primitive>
-      <!-- <GLTFModel v-else-if="subMesh.type == 'GLTFModel'" :ref="(el)=> subMesh.el=el.instance " @click="clickMesh(subMesh,index,$event)"  @contextmenu="clickRight($event, subMesh,index)" 
-         :path="subMesh.meshConfig" /> -->
+      <GLTFModel v-else-if="subMesh.type == 'GLTFModel'" :ref="(el)=> subMesh.el=el.instance " @click="clickMesh(subMesh,index,$event)"  @contextmenu="clickRight($event, subMesh,index)" 
+         :path="subMesh.meshConfig" />
       <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
       <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
     </Suspense>
@@ -173,9 +173,9 @@ watch(() => lightSetting, (e) => {
 const gltfScene = ref<any>(false)
 const objectBox = async (item: any) => {
   try {
-    const { scene } = await useGLTF(item.meshConfig)
-    gltfScene.value = true
-    console.log('Loaded scene:', scene) // 打印加载的场景
+    // const res = await useGLTF(item.meshConfig)
+    const { scene, nodes } = await useGLTF('https://a.amap.com/jsapi_demos/static/gltf-online/shanghai/scene.gltf')
+    // const { scene,nodes} = res
     return scene
   } catch (error) {
     console.error('Error loading GLTF:', error)

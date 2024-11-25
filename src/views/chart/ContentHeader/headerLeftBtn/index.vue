@@ -132,10 +132,8 @@ const historyList = reactive<ItemType<HistoryStackEnum>[]>([
     icon: renderIcon(ArrowForwardIcon)
   }
 ])
-
 const importUploadFileListRef = ref()
   const { updateComponent } = useSync()
-
   // 上传-前置
   //@ts-ignore
   const importBeforeUpload = ({ file }) => {
@@ -164,11 +162,12 @@ const importUploadFileListRef = ref()
               "categoryName": "模型",
               "package": "Graphic",
               "chartFrame": "common",
-              image:''
+              image:'Mesh.png'
             }
           let newComponent: CreateComponentType = await createComponent(dropData)
           newComponent.meshConfig = URL.createObjectURL(file.file)
-          newComponent.type = 'primitive'
+          // newComponent.type = 'primitive'
+          newComponent.chartConfig.title = f
           setComponentPosition(newComponent, 0,0)
           chartEditStore.addComponentList(newComponent, false, true)
           chartEditStore.setTargetSelectChart(newComponent.id)
