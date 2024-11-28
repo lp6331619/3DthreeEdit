@@ -1,15 +1,16 @@
 <template>
-  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{config.componentList[0].attr}} </div> -->
-  <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef">
+  <!-- <div style="width:900px;max-height:200px;overflow-y: auto;">{{outlinePassList[0].name}}</div> -->
+  <div class="tres-canvas-container">
+  <TresCanvas v-bind="canvasConfig" ref="TresCanvasRef" renderMode="on-demand">
     <!-- 轴 -->
     <TresAxesHelper :args="[100]" />
-    <!-- 控制 -->
-    <OrbitControls make-default  v-bind="cameraConfig" @end="OrbitControlsEnd"/>
+    <!-- 轨道控制器 -->
+    <!-- <OrbitControls make-default ref="controlsRef" v-bind="cameraConfig" @end="OrbitControlsEnd" /> -->
     <!-- 坐标格辅助对象 -->
     <TresGridHelper  :args="[1000,100]" />
     <!-- 透视摄像机 -->
-    <TresPerspectiveCamera ref="cameraRef" :position="[10,10,10]" :look-at="[0, 0, 0]"/>
-    <!-- <CameraControls :camera="cameraRef" ref="controlsRef" v-bind="cameraConfig" make-default  /> -->
+    <TresPerspectiveCamera ref="cameraRefs" :position="[10,10,10]" :look-at="lookAt"/>
+    <CameraControls v-if="cameraRefs" :camera="cameraRefs" ref="controlsRef" v-bind="cameraConfig" make-default @end="OrbitControlsEnd"  />
     <!-- 环境光 -->
     <TresAmbientLight :intensity="2"/>
     <TresDirectionalLight
@@ -24,7 +25,7 @@
     />
     <!-- 灯光 -->
     <component v-for="(item,i) in config.lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
-    <Suspense v-for="(subMesh, index) in config.componentList" :key="subMesh.key" >
+    <TresGroup v-for="(subMesh, index) in config.componentList" :key="subMesh.key" >
       <!-- 添加的mesh对象 -->
       <TresMesh
         v-if="subMesh.type == 'TresMesh' && !subMesh.status.hide"
@@ -35,8 +36,9 @@
         :onlyId="subMesh.id"
         @pointer-enter="onPointerEnter($event)"
         @pointer-leave="onPointerLeave($event)"
-        @click="clickMesh(subMesh,index,$event)"
+        @double-click="fitToBox($event,subMesh,index)"
         @context-menu="clickRight($event,subMesh,index)"
+        @pointer-down="clickMesh($event,subMesh,index)"
       >
         <!-- 其他配置 --> 
         <component v-for="(item, i) in subMesh?.children"  :key="item.key" :is="'Tres'+item.type" v-bind="item.config"  />
@@ -54,7 +56,7 @@
             :class="animationsClass(subMesh.styles.animations)"
             :is="subMesh.chartConfig.chartKey"
             :chartConfig="subMesh"
-            @click="clickMesh(subMesh,index,$event)"
+            @click="clickMesh($event,subMesh,index)"
             @contextmenu.prevent="clickRight($event, subMesh,index)" 
             :style="{
               ...useSizeStyle(subMesh.attr),
@@ -63,40 +65,51 @@
           ></component>
         </Html>
       </TresGroup >
-      <primitive v-else-if="subMesh.type == 'primitive' && !subMesh.status.hide" :object="objectBox(subMesh)" v-bind="subMesh.option" >
-        <!-- <ModelLoad :url="subMesh.meshConfig" /> -->
-      </primitive>
-      <TresGroup  v-else-if="subMesh.type == 'GLTFModel' && !subMesh.status.hide" :ref="(el)=> subMesh.el=el " v-bind="subMesh.option">
-        <GLTFModel  @click="clickMesh(subMesh,index,$event)" 
-          :path="subMesh.meshConfig" />
-      </TresGroup>
-      <Sky v-else-if="subMesh.type == 'Sky'" v-bind="subMesh.option"  />
-      <Stars v-else-if="subMesh.type == 'Stars'" v-bind="subMesh.option" />
-    </Suspense>
+      <!-- <primitive v-else-if="subMesh.type == 'primitive' && !subMesh.status.hide" :object="objectBox(subMesh)" v-bind="subMesh.option" >
+        <ModelLoad :url="subMesh.meshConfig" />
+      </primitive> -->
+      <Suspense  v-else-if="subMesh.type == 'GLTFModel' && !subMesh.status.hide">
+        <TresGroup  :ref="(el)=> subMesh.el=el " v-bind="subMesh.option">
+          <GLTFModel 
+            @context-menu="fitToBox($event,subMesh,index)" 
+            @pointer-down="clickMesh($event,subMesh,index)"  
+             @pointer-enter="onPointerEnter($event)"
+             @pointer-leave="onPointerLeave($event)"
+            :path="subMesh.meshConfig" />
+        </TresGroup>
+      </Suspense>
+      <Sky v-else-if="subMesh.type == 'Sky' && !subMesh.status.hide" v-bind="subMesh.option"  />
+      <Stars v-else-if="subMesh.type == 'Stars' && !subMesh.status.hide" v-bind="subMesh.option" />
+    </TresGroup>
     <!-- 变换控制器 -->
     <TransformControls v-if="transformControlsState.enabled" :object="transformRef" v-bind="transformControlsState" 
      @dragging="ControlsStateMouseDown"/>
     <Stats />
-    <!-- <primitive :object="scene" :scale="5" ref="modelRef" :position="[0, -2, 0]" /> -->
+    <Effect :EffectComposer="effectComposer" :outlinePassList="outlinePassList" :layers="layers" ></Effect>
   </TresCanvas>
+</div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive,defineAsyncComponent, computed, toRef, watchEffect, nextTick, onMounted, watch, onUpdated, shallowRef } from 'vue'
+import { ref, reactive,defineAsyncComponent,onUnmounted, computed, toRef, watchEffect, nextTick, onMounted, watch, onUpdated, shallowRef } from 'vue'
 import { useRenderLoop, useTresContext, vLightHelper } from '@tresjs/core'
 import { initEvents, registerEvent, unregisterEvent, updateEvents } from '@/utils/event'
 import { OrbitControls, TransformControls, CameraControls, Stars, Sky, useGLTF, StatsGl, Html, Stats ,GLTFModel} from '@tresjs/cientos'
 import { throttle, deepClone } from '@/utils'
-import { Raycaster, Vector2 } from 'three'
+import { Raycaster, Vector2, Vector3, Plane } from 'three'
 import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore'
 import { storeToRefs } from 'pinia'
 import { defaultOption, defaultChildren } from '@/settings/designSetting'
 import { useComponentStyle, useSizeStyle } from '@/views/chart/contentEdit/hooks/useStyle.hook'
 import { animationsClass, getFilterStyle, getTransformStyle, getBlendModeStyle, colorCustomMerge } from '@/utils'
+import {
+  dragHandle,
+  dragoverHandle,
+} from '@/views/chart/ContentEdit/hooks/useDrag.hook'
 const ModelLoad = defineAsyncComponent(() => import('@/components/ModelLoad/index.vue'));
+const Effect = defineAsyncComponent(() => import('./effect.vue'));
 const chartEditStore = useChartEditStore()
-const { transformRef } = storeToRefs(chartEditStore)
-
+const { transformRef,canvasRefs  } = storeToRefs(chartEditStore)
 // 模型配置
 const componentList = chartEditStore.getComponentList
 // 画布配置
@@ -110,15 +123,76 @@ const transformControlsState = chartEditStore.getTransformControlsState
 
 const emits = defineEmits(['click', 'rightClick'])
 const TresCanvasRef = shallowRef<any>()
-const cameraRef = shallowRef<any>()
+const cameraRefs = shallowRef<any>()
 const lightRef = shallowRef<any[]>([])
+const controlsRef = shallowRef<any>()
+const lookAt = ref<any>([0, 0, 0])
 const htmlState = reactive({
   wrapperClass: 'threeHtml',
   sprite: true,
   transform: false,
   distanceFactor: 10
 })
-
+const effectComposer = shallowRef<any>({
+  isColorCorrection: false,
+  SAOProperty: {
+    enabled: false,
+    output: 0,
+    saoBias: 1, //偏移
+    saoIntensity: 1, //强度
+    saoScale: 10, //比例
+    saoKernelRadius: 100, //内核半径
+    saoMinResolution: 1, //最小分辨率
+    saoBlur: true, //模糊
+    saoBlurRadius: 200, //模糊半径
+    saoBlurStdDev: 150,
+    saoBlurDepthCutoff: 0.01
+  },
+  SSAOProperty: {
+    enabled: false,
+    output: 0,
+    kernelRadius: 8,
+    minDistance: 0.005,
+    maxDistance: 0.1
+  },
+  BloomPass: {
+    enabled: false,
+    threshold: 0,
+    strength: 0.972,
+    radius: 0.21
+  },
+  HueSaturation: {
+    enabled: false,
+    hue: 0,
+    saturation: 0
+  },
+  FilmPass: {
+    enabled: false,
+    intensity: 0,
+    grayscale: false
+  },
+  DotScreenPass: {
+    enabled: false,
+    centerX: 0,
+    centerY: 0,
+    angle: 0,
+    scale: 0
+  },
+  GlitchPass: {
+    enabled: false,
+    goWild: true
+  }
+})
+const outlinePassList = ref<any[]>([ {
+  name: [],
+  attrs: {
+    visibleEdgeColor: "#ff0000",
+    edgeThickness: 4,
+    edgeStrength: 6,
+    pulsePeriod: 2
+  }
+}])
+const layers = ref<number>(0)
 // 模型
 const config = reactive<{
   componentList: any[],
@@ -145,6 +219,11 @@ watch(() => componentList, (e) => {
       key: item.type=='Html' ? item.id + randomInteger : item.id
     }
   });
+  console.log(config.componentList,'更新了')
+  // nextTick(() => {
+  //   const list = config.componentList.filter((item:any)=>item.type=='GLTFModel')
+  //   list.length && list[list.length-1]?.el && controlsRef?.value?.instance?.fitToBox(list[list.length-1].el, true)
+  // })
   // 强制更新Html类型的数据，他不更新
   const currentItem = config.componentList[config.currentIndex];
   if(currentItem?.type !== 'Html') return 
@@ -156,18 +235,16 @@ watch(() => componentList, (e) => {
       transformControlsState.enabled = true;
     }
   });
-  console.log(config.componentList, '配置更新了');
 }, { deep: true, immediate: true });
 
 // 灯光
 watch(() => lightSetting, (e) => {
   config.lightSetting = deepClone(e || [])
 }, { deep: true, immediate: true })
-const gltfScene = ref<any>(false)
+
+// 加载gltf模型
 const objectBox = async (item: any) => {
   try {
-    console.log(item,444)
-
     const res = await useGLTF(item.meshConfig)
     // const { scene, nodes } = await useGLTF('https://a.amap.com/jsapi_demos/static/gltf-online/shanghai/scene.gltf')
     // gltfScene.value = scene
@@ -178,12 +255,17 @@ const objectBox = async (item: any) => {
   }
 }
 const { onLoop, onBeforeLoop, onAfterLoop, pause, resume } = useRenderLoop()
-const raycaster = new Raycaster()
-const mouse = new Vector2()
+
 // 选择模型移动
-const clickMesh = (item: any, i: number, e: any) => {
-  // const {object} = e
-  transformRef.value =  item.el
+const fitToBox = (e:any,item: any, i: number) => {
+  const {object} = e
+  const current = object || item.el
+  controlsRef?.value?.instance?.fitToBox(current, true)
+}
+// 双击模型
+const clickMesh = (e: any, item: any, i: number) => {
+  const {object} = e
+  transformRef.value = object || item.el
   config.currentIndex = i
   transformControlsState.enabled = true
   emits('click', {
@@ -198,15 +280,18 @@ const clickRight = (e: any, item: any,i: number) => {
     e: e,
     item: item
   })
-  // const {object} = e
-  transformRef.value = item.el
-  config.currentIndex = i
-  transformControlsState.enabled = true
-  emits('click', {
-    ref: transformRef.value,
-    config: componentList[i],
-    e: e
-  })
+  transformControlsState.enabled = false
+  transformRef.value = null
+  config.currentIndex = null
+  // // const {object} = e
+  // transformRef.value = item.el
+  // config.currentIndex = i
+  // transformControlsState.enabled = true
+  // emits('click', {
+  //   ref: transformRef.value,
+  //   config: componentList[i],
+  //   e: e
+  // })
 }
 
 // 变换控制器
@@ -228,41 +313,59 @@ const ControlsStateMouseDown = (isMove:boolean)=>{
 
 //监听控制器
 const OrbitControlsEnd = (e)=>{
-  const {getDistance} = e
-  cameraConfig.distance = getDistance()
+  // const {getDistance} = e
+  console.log(e,'OrbitControlsEnd')
+  // cameraConfig.distance = getDistance()
 }
 onLoop(({ delta, elapsed }) => {
   // updateEvents(elapsed * 1000, delta * 1000)
 })
 onAfterLoop((res: any) => {})
+
+
 // 鼠标移入到模型上时，改变模型颜色
 const changeColor = throttle((ev: any) => {
+  const {object} = ev
+    const color = object.material.color.getHexString()
+    if(color!=='dfff45' && color!==object.customColor) {
+    object.customColor = color
+  }
   ev.object.material.color.set('#DFFF45')
 }, 200)
 function onPointerEnter(ev: any) {
   if (ev) {
+    // outlinePassList.value[0].name = []
+    // outlinePassList.value[0].name.push(ev.object.name)
     changeColor(ev)
     // pause()
   }
 }
 
-// 设置模型颜色
-const setColor = throttle((ev: any) => {
-  if (ev.eventObject.name == NaN) return
-  const mesh = componentList.find((item: any) => item.id == ev.eventObject.onlyId)
-  mesh && mesh.children && ev.eventObject.material.color.set(mesh.children[1]?.config.color)
-}, 200)
-
 // 鼠标移出时，恢复模型颜色
 function onPointerLeave(ev: any) {
   if (ev) {
-    setColor(ev);
+    // outlinePassList.value[0].name = []
+    const {object} = ev
+    object.material.color.set('#'+object.customColor)
     // resume(); 
   }
 }
+onMounted(() => {
+  setTimeout(() => {
+    nextTick(() => {
+      if(TresCanvasRef.value){
+        canvasRefs.value = TresCanvasRef.value
+      }
+    })
+  }, 1000)
+})
 
-onMounted(() => { });
 </script>
 
-<style>
+<style >
+.tres-canvas-container{
+  width: 100%;
+  height: 100%;
+  transform: translateZ(0);
+}
 </style>

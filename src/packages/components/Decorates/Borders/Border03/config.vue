@@ -23,21 +23,11 @@
     </SettingItemBox>
   </CollapseItem>
 
-  <CollapseItem name="背景" :expanded="true">
-    <SettingItemBox name="颜色">
-      <SettingItem>
-        <n-color-picker
-          size="small"
-          :modes="['hex']"
-          v-model:value="optionData.backgroundColor"
-        ></n-color-picker>
-      </SettingItem>
-    </SettingItemBox>
-  </CollapseItem>
+  <textConfig :optionData="optionData" />
 </template>
 
 <script setup lang="ts">
-import { PropType } from 'vue'
+import { PropType,defineAsyncComponent } from 'vue'
 import {
   CollapseItem,
   SettingItemBox,
@@ -45,6 +35,7 @@ import {
 } from '@/components/Pages/ChartItemSetting'
 import { option } from './config'
 
+const textConfig = defineAsyncComponent(() => import('../../Components/config.vue'));
 const props = defineProps({
   optionData: {
     type: Object as PropType<typeof option>,

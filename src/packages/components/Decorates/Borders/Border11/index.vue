@@ -33,13 +33,14 @@
         :points="`22, 22 ${w - 4}, 22 ${w - 4}, ${h - 4} 22, ${h - 4} 22, 22`"
       />
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
 <script setup lang="ts">
-import { PropType, toRefs } from 'vue'
+import { PropType, toRefs,defineAsyncComponent } from 'vue'
 import { CreateComponentType } from '@/packages/index.d'
-
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,

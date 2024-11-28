@@ -21,13 +21,14 @@
       <circle :fill="colors[0]" :cx="w - 11" :cy="h - 11" r="1" />
       <circle :fill="colors[0]" cx="11" :cy="h - 11" r="1" />
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
 <script setup lang="ts">
-import { PropType, toRefs } from 'vue'
-import { CreateComponentType } from '@/packages/index.d'
-
+import { PropType, toRefs,defineAsyncComponent } from 'vue'
+  import { CreateComponentType } from '@/packages/index.d'
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,

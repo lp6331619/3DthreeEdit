@@ -55,13 +55,14 @@
         />
       </polygon>
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
 <script setup lang="ts">
-import { PropType, toRefs } from 'vue'
+import { PropType, toRefs ,defineAsyncComponent} from 'vue'
 import { CreateComponentType } from '@/packages/index.d'
-
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,

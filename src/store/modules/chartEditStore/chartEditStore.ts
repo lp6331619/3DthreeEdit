@@ -153,15 +153,16 @@ export const useChartEditStore = defineStore({
       // zoom: 1,
       // lookAt: [100, 10, 20],
       distance: 25,
-
+      smoothTime: 0.5,
+      // infinityDolly: true,
       minDistance: 1, //摄像机最小距离
-      maxDistance: 900, //摄像机最大距离
-      enableDamping: true, //是否启用阻尼
-      dampingFactor: 0.05, //阻尼系数
-      autoRotate: false, //是否自动旋转
-      autoRotateSpeed: 2, //选择速度
-      enableZoom: true, //启用缩放
-      zoomSpeed: 5 //缩放速度
+      maxDistance: 900 //摄像机最大距离
+      // enableDamping: true, //是否启用阻尼
+      // dampingFactor: 0.05, //阻尼系数
+      // autoRotate: false, //是否自动旋转
+      // autoRotateSpeed: 2, //选择速度
+      // enableZoom: true, //启用缩放
+      // zoomSpeed: 5 //缩放速度
 
       // minZoom: 0.01, //最小缩放
       // maxZoom: 1 // 最大缩放
@@ -191,7 +192,7 @@ export const useChartEditStore = defineStore({
     transformControlsState: {
       mode: 'translate',
       enabled: false,
-      space: 'world',
+      space: 'local',
       axis: 'XYZ',
       size: 1,
       showX: true,
@@ -200,6 +201,8 @@ export const useChartEditStore = defineStore({
     },
     // 鼠标选中的元素
     transformRef: null,
+    //整个画布ref
+    canvasRefs: null,
     // 图表数组（需存储给后端）
     componentList: []
   }),
@@ -239,6 +242,9 @@ export const useChartEditStore = defineStore({
     },
     getTransformRef() {
       return this.transformRef
+    },
+    getCanvasRefs() {
+      return this.canvasRefs
     }
   },
   actions: {
@@ -335,6 +341,10 @@ export const useChartEditStore = defineStore({
     //设置摄像头数据
     setCameraConfig(data: any) {
       this.cameraConfig = data
+    },
+    //设置整个画布ref
+    setCanvasRefs(data: any) {
+      this.canvasRefs = data
     },
     //设置灯光
     setLightSetting(data: any) {

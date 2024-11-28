@@ -50,12 +50,8 @@
               <n-input-number v-model:value="item.config.intensity" :step="0.5" :min="0" :max="100" size="small"></n-input-number>
             </setting-item>
           </setting-item-box> 
-          
           <setting-item-box v-if="item.type!='TresAmbientLight'" name="开启阴影" >
             <setting-item ><n-switch v-model:value="item.config.castShadow" size="small"></n-switch></setting-item>
-            <setting-item name="旋转速度" >
-              <n-input-number v-model:value="config.autoRotateSpeed" :step="1" :min="1" :max="100" size="small"></n-input-number>
-            </setting-item>  
           </setting-item-box> 
         </n-collapse-item>
       </n-collapse>

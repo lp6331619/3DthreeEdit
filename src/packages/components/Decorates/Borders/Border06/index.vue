@@ -50,13 +50,15 @@
         :points="`0, ${h - 10} 0, ${h} 10, ${h}`"
       />
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
 <script setup lang="ts">
 import { PropType, ref, toRefs } from 'vue'
 import { CreateComponentType } from '@/packages/index.d'
-
+import { defineAsyncComponent } from 'vue'
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,

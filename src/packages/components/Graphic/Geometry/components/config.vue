@@ -32,11 +32,10 @@
 import { PropType } from 'vue'
 import { swatchesColors } from '@/settings/chartThemes/index'
 import {materialList} from '../../../../public/chart'
-import { option,children, FontWeightEnum, FontWeightObject } from './config'
 import { CollapseItem, SettingItemBox, SettingItem } from '@/components/Pages/ChartItemSetting'
 const props = defineProps({
   childrenData: {
-    type: Array as PropType<typeof children>,
+    type: Array,
     required: true
   }
 })

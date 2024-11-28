@@ -1,5 +1,6 @@
 <template>
   <!-- <edit-rule></edit-rule> -->
+<div ref="contentBoxRef">
   <content-box
     id="go-chart-edit-layout"
     :flex="true"
@@ -9,7 +10,7 @@
     :xScroll="true"
     :disabledScroll="true"
     @mousedown="mousedownHandleUnStop"
-    @drop="dragHandle"
+    @drop="dragHandle($event,contentBoxRef)"
     @dragover="dragoverHandle"
     @dragenter="dragoverHandle"
   >
@@ -48,7 +49,7 @@
         </edit-range>
       </div>
     </edit-rule> -->
-    <TresCanva @click="TresCanvaClick" @rightClick="rightClickHandle" />
+    <TresCanvas @click="TresCanvaClick" @rightClick="rightClickHandle" />
     <!-- 工具栏 -->
     <template #aside>
       <edit-tools></edit-tools>
@@ -58,10 +59,11 @@
       <EditBottom></EditBottom>
     </template>
   </content-box>
+</div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, computed, provide, reactive, defineAsyncComponent,watch } from 'vue'
+import { onMounted, computed, provide, reactive, defineAsyncComponent,watch ,ref} from 'vue'
 import { chartColors } from '@/settings/chartThemes/index'
 import { MenuEnum } from '@/enums/editPageEnum'
 import { CreateComponentType, CreateComponentGroupType } from '@/packages/index.d'
@@ -89,10 +91,10 @@ import { EditBottom } from './components/EditBottom'
 import { EditShapeBox } from './components/EditShapeBox'
 import { EditTools } from './components/EditTools'
 
-const TresCanva = defineAsyncComponent(() => import('@/components/TresCanva/index.vue'))
+const TresCanvas = defineAsyncComponent(() => import('@/components/TresCanvas/index.vue'))
 const chartEditStore = useChartEditStore()
 const { handleContextMenu ,optionsHandle} = useContextMenu()
-
+const contentBoxRef = ref<any>()
 // 编辑时注入scale变量，消除警告
 provide(SCALE_KEY, null)
 

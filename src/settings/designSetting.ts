@@ -27,13 +27,27 @@ export const theme = {
   appTheme: '#409EFF',
   appThemeDetail: null
 }
-
+//默认文字配置
+export const defaultBorderText = {
+  link: '',
+  linkHead: 'http://',
+  dataset: '我是文本',
+  fontSize: 20,
+  fontColor: '#ffffff',
+  paddingX: 10,
+  paddingY: 10,
+  textAlign: 'center', // 水平对齐方式
+  fontWeight: 'normal',
+  // 字间距
+  letterSpacing: 5,
+  writingMode: 'horizontal-tb'
+}
 // 图表初始配置(px)
 export const chartInitConfig = {
   x: 50,
   y: 50,
-  w: 150,
-  h: 100,
+  w: 300,
+  h: 150,
   // 不建议动 offset
   offsetX: 0,
   offsetY: 0

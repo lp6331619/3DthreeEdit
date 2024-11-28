@@ -8,13 +8,35 @@ import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore
 import { EditCanvasTypeEnum } from '@/store/modules/chartEditStore/chartEditStore.d'
 import { loadingStart, loadingFinish, loadingError, setComponentPosition, JSONParse } from '@/utils'
 import { throttle, cloneDeep } from 'lodash'
+import { storeToRefs } from 'pinia'
+import { Raycaster, Vector2, Vector3, Plane } from 'three'
 
 const chartEditStore = useChartEditStore()
+const { canvasRefs } = storeToRefs(chartEditStore)
 const { onClickOutSide } = useContextMenu()
+const raycaster = new Raycaster()
+const mouse = new Vector2()
+function onMouseMove(event: MouseEvent, contentBoxRef: any) {
+  if (!canvasRefs.value) return
+  const { context } = canvasRefs.value
+  const { scene, camera } = context
+  // 将鼠标位置转换为标准化设备坐标
+  mouse.x = (event.offsetX / contentBoxRef.offsetWidth) * 2 - 1
+  mouse.y = -(event.offsetY / contentBoxRef.offsetHeight) * 2 + 1
+  // 更新射线
+  raycaster.setFromCamera(mouse, camera.value)
 
+  const intersects = raycaster.intersectObject(scene.value)
+  if (intersects.length > 0) {
+    // 获取交点的世界坐标
+    var point = intersects[0].point
+    return point
+  }
+}
 // * 拖拽到编辑区域里
-export const dragHandle = async (e: DragEvent) => {
+export const dragHandle = async (e: DragEvent, contentBoxRef: any) => {
   e.preventDefault()
+  const intersection = onMouseMove(e, contentBoxRef)
   try {
     loadingStart()
     // 获取拖拽数据
@@ -27,7 +49,6 @@ export const dragHandle = async (e: DragEvent) => {
     chartEditStore.setEditCanvas(EditCanvasTypeEnum.IS_CREATE, false)
     const dropData: Exclude<ConfigType, ['image']> = JSONParse(drayDataString)
     if (dropData.disabled) return
-
     // 创建新图表组件
     let newComponent: CreateComponentType = await createComponent(dropData)
     if (dropData.redirectComponent) {
@@ -36,6 +57,7 @@ export const dragHandle = async (e: DragEvent) => {
       newComponent.chartConfig.chartFrame = dropData.chartFrame
     }
     setComponentPosition(newComponent, e.offsetX - newComponent.attr.w / 2, e.offsetY - newComponent.attr.h / 2)
+    intersection && (newComponent.option.position = [...intersection])
     chartEditStore.addComponentList(newComponent, false, true)
     chartEditStore.setTargetSelectChart(newComponent.id)
     loadingFinish()
@@ -68,7 +90,6 @@ export const TresCanvaClick = async (obj: any) => {
 export const dragoverHandle = (e: DragEvent) => {
   e.preventDefault()
   e.stopPropagation()
-
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
 }
 

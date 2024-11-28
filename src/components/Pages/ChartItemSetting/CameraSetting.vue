@@ -1,6 +1,6 @@
 <template>
   <collapse-item :name="'摄像机'">
-    <setting-item-box name="启用阻尼" >
+    <!-- <setting-item-box name="启用阻尼" >
       <setting-item ><n-switch v-model:value="config.enableDamping" size="small"></n-switch></setting-item>
       <setting-item name="阻尼系数" >
         <n-input-number v-model:value="config.dampingFactor" :step="0.01" :min="0.01" :max="1" size="small"></n-input-number>
@@ -17,7 +17,7 @@
       <setting-item name="缩放速度" >
         <n-input-number v-model:value="config.zoomSpeed" :step="1" :min="1" :max="100" size="small"></n-input-number>
       </setting-item>  
-    </setting-item-box> 
+    </setting-item-box>  -->
     <!-- touches -->
     <!-- <setting-item-box name="当前距离" >
       <setting-item >

@@ -116,6 +116,7 @@
 
       <rect x="0" y="0" :width="w" :height="h" :fill="`url(#${filterId})`" :mask="`url(#${maskId})`"/>
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
@@ -123,7 +124,8 @@
 import { PropType, toRefs } from 'vue'
 import { CreateComponentType } from '@/packages/index.d'
 import { getUUID } from '@/utils'
-
+import { defineAsyncComponent } from 'vue'
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,

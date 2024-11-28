@@ -42,6 +42,7 @@
         />
       </use>
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
@@ -49,7 +50,8 @@
 import { PropType, toRefs, computed } from 'vue'
 import { CreateComponentType } from '@/packages/index.d'
 import { getUUID } from '@/utils'
-
+import { defineAsyncComponent } from 'vue'
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,

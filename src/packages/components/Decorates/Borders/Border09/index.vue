@@ -19,13 +19,15 @@
       <polyline :stroke="colors[0]" :points="`${w - 3}, ${h - 10} ${w - 3}, ${h - 50}`"/>
       <polyline :stroke="colors[0]" :points="`${w - 7}, ${h - 30} ${w - 7}, ${h - 80}`"/>
     </svg>
+    <textConfig :chartConfig="chartConfig"  />
   </div>
 </template>
 
 <script setup lang="ts">
 import { PropType, toRefs, computed } from 'vue'
 import { CreateComponentType } from '@/packages/index.d'
-
+import { defineAsyncComponent } from 'vue'
+const textConfig = defineAsyncComponent(() => import('../../Components/index.vue'));
 const props = defineProps({
   chartConfig: {
     type: Object as PropType<CreateComponentType>,
