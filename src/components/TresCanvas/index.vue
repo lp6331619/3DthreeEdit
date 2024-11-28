@@ -146,14 +146,15 @@ const config = reactive<{
   componentList: any[],
   lightSetting: any[],
   htmlList: Record<string, any>,
-  currentIndex: number | null
 }>({
   componentList: [],
   lightSetting: [],
   htmlList: {},
-  currentIndex: null,
 })
-
+//获取当前选中组件
+const getCurrentItem = ()=>{
+  return transformRef.value ? config.componentList.find((item:any)=>item.id === transformRef.value?.onlyId) : {}
+}
 // 更新配置
 watch(() => componentList, (e) => {
   config.componentList = deepClone(e || [])
@@ -176,7 +177,7 @@ watch(() => componentList, (e) => {
     componentListRef.value = config.componentList.map((item:any)=>item.el)
   })
   // 强制更新Html类型的数据，他不更新
-  const currentItem = config.componentList[config.currentIndex];
+  const currentItem = getCurrentItem();
   if(currentItem?.type !== 'Html') return 
   // 这里处理变换控制器 html类型的问题，确保在更新 TransformControls 之前，组件已经被渲染
   transformControlsState.enabled = false;
@@ -215,9 +216,10 @@ const fitToBox = (e:any,item: any, i: number) => {
 }
 // 双击模型
 const clickMesh = (e: any, item: any, i: number) => {
-  config.currentIndex = i
+ 
+  
   emits('click', {
-    item: componentList[i],
+    item: item,
     e: e
   })
 }
@@ -229,10 +231,8 @@ const clickRight = (e: any, item: any,i: number) => {
   })
   transformControlsState.enabled = false
   transformRef.value = null
-  config.currentIndex = null
   // // const {object} = e
   // transformRef.value = item.el
-  // config.currentIndex = i
   // transformControlsState.enabled = true
   // emits('click', {
   //   ref: transformRef.value,
@@ -244,7 +244,7 @@ const clickRight = (e: any, item: any,i: number) => {
 // 变换控制器
 const ControlsStateMouseDown = (isMove:boolean)=>{
   if(!transformRef.value || isMove) return
-  const item = config.componentList[config.currentIndex]
+  const item = getCurrentItem()
   const position = transformRef.value.position.clone()
   const scale = transformRef.value.scale.clone()
   const rotation = transformRef.value.rotation.clone()

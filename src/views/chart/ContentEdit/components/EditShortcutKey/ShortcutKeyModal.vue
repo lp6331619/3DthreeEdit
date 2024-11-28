@@ -51,12 +51,12 @@ watch(() => props.modelShow, (newValue) => {
 
 // 快捷键
 const shortcutKeyOptions = [
-  {
-    label: '拖拽画布',
-    win: `${WinKeyboard.SPACE.toUpperCase()} + 🖱️ `,
-    mac: `${MacKeyboard.SPACE.toUpperCase()} + 🖱️ `,
-    macSource: true
-  },
+  // {
+  //   label: '拖拽画布',
+  //   win: `${WinKeyboard.SPACE.toUpperCase()} + 🖱️ `,
+  //   mac: `${MacKeyboard.SPACE.toUpperCase()} + 🖱️ `,
+  //   macSource: true
+  // },
   {
     label: '向 上/右/下/左 移动',
     win: `${WinKeyboard.CTRL.toUpperCase()} + ↑ 或 → 或 ↓ 或 ←`,
