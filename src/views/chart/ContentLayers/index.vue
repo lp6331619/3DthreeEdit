@@ -67,6 +67,7 @@
 import { computed, ref, watch } from 'vue'
 import Draggable from 'vuedraggable'
 import cloneDeep from 'lodash/cloneDeep'
+import { storeToRefs } from 'pinia'
 import { ContentBox } from '../ContentBox/index'
 import { useChartLayoutStore } from '@/store/modules/chartLayoutStore/chartLayoutStore'
 import { ChartLayoutStoreEnum, LayerModeEnum } from '@/store/modules/chartLayoutStore/chartLayoutStore.d'
@@ -86,6 +87,10 @@ const { LaptopIcon } = icon.carbon
 const chartLayoutStore = useChartLayoutStore()
 const chartEditStore = useChartEditStore()
 const { handleContextMenu, onClickOutSide } = useContextMenu()
+
+const { transformRef } = storeToRefs(chartEditStore)
+const transformControlsState = chartEditStore.getTransformControlsState
+const componentListRef = chartEditStore.getComponentListRef
 
 const layerModeList = [
   { label: '缩略图', icon: LaptopIcon, value: LayerModeEnum.THUMBNAIL },
@@ -168,6 +173,11 @@ const mousedownHandle = (e: MouseEvent, item: CreateComponentType) => {
   onClickOutSide()
   // 若此时按下了 CTRL, 表示多选
   const id = item.id
+  //点击图层 选中组件开启变换控制器
+  const itemRef = componentListRef.value.find((e: any) => e.onlyId === id)
+  transformRef.value = itemRef
+  transformControlsState.enabled = true
+  
   if (e.buttons === MouseEventButton.LEFT && window.$KeyboardActive?.ctrl) {
     // 若已选中，则去除
     if (chartEditStore.targetChart.selectId.includes(id)) {

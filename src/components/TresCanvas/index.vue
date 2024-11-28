@@ -73,8 +73,8 @@
           <GLTFModel 
             @context-menu="fitToBox($event,subMesh,index)" 
             @pointer-down="clickMesh($event,subMesh,index)"  
-             @pointer-enter="onPointerEnter($event)"
-             @pointer-leave="onPointerLeave($event)"
+            @pointer-enter="onPointerEnter($event)"
+            @pointer-leave="onPointerLeave($event)"
             :path="subMesh.meshConfig" />
         </TresGroup>
       </Suspense>
@@ -106,6 +106,7 @@ import {
   dragHandle,
   dragoverHandle,
 } from '@/views/chart/ContentEdit/hooks/useDrag.hook'
+import { effectComposerConfig ,outlinePassListConfig } from './effectConfig'
 const ModelLoad = defineAsyncComponent(() => import('@/components/ModelLoad/index.vue'));
 const Effect = defineAsyncComponent(() => import('./effect.vue'));
 const chartEditStore = useChartEditStore()
@@ -120,6 +121,8 @@ const cameraConfig = chartEditStore.getCameraConfig
 const lightSetting = chartEditStore.getLightSetting
 // 变换配置
 const transformControlsState = chartEditStore.getTransformControlsState
+// 组件列表ref
+const componentListRef = chartEditStore.getComponentListRef
 
 const emits = defineEmits(['click', 'rightClick'])
 const TresCanvasRef = shallowRef<any>()
@@ -133,65 +136,10 @@ const htmlState = reactive({
   transform: false,
   distanceFactor: 10
 })
-const effectComposer = shallowRef<any>({
-  isColorCorrection: false,
-  SAOProperty: {
-    enabled: false,
-    output: 0,
-    saoBias: 1, //偏移
-    saoIntensity: 1, //强度
-    saoScale: 10, //比例
-    saoKernelRadius: 100, //内核半径
-    saoMinResolution: 1, //最小分辨率
-    saoBlur: true, //模糊
-    saoBlurRadius: 200, //模糊半径
-    saoBlurStdDev: 150,
-    saoBlurDepthCutoff: 0.01
-  },
-  SSAOProperty: {
-    enabled: false,
-    output: 0,
-    kernelRadius: 8,
-    minDistance: 0.005,
-    maxDistance: 0.1
-  },
-  BloomPass: {
-    enabled: false,
-    threshold: 0,
-    strength: 0.972,
-    radius: 0.21
-  },
-  HueSaturation: {
-    enabled: false,
-    hue: 0,
-    saturation: 0
-  },
-  FilmPass: {
-    enabled: false,
-    intensity: 0,
-    grayscale: false
-  },
-  DotScreenPass: {
-    enabled: false,
-    centerX: 0,
-    centerY: 0,
-    angle: 0,
-    scale: 0
-  },
-  GlitchPass: {
-    enabled: false,
-    goWild: true
-  }
-})
-const outlinePassList = ref<any[]>([ {
-  name: [],
-  attrs: {
-    visibleEdgeColor: "#ff0000",
-    edgeThickness: 4,
-    edgeStrength: 6,
-    pulsePeriod: 2
-  }
-}])
+//特效配置
+const effectComposer = shallowRef<any>({...effectComposerConfig})
+//轮廓线配置
+const outlinePassList = ref<any[]>([...outlinePassListConfig])
 const layers = ref<number>(0)
 // 模型
 const config = reactive<{
@@ -224,6 +172,9 @@ watch(() => componentList, (e) => {
   //   const list = config.componentList.filter((item:any)=>item.type=='GLTFModel')
   //   list.length && list[list.length-1]?.el && controlsRef?.value?.instance?.fitToBox(list[list.length-1].el, true)
   // })
+  nextTick(()=>{
+    componentListRef.value = config.componentList.map((item:any)=>item.el)
+  })
   // 强制更新Html类型的数据，他不更新
   const currentItem = config.componentList[config.currentIndex];
   if(currentItem?.type !== 'Html') return 
@@ -264,13 +215,9 @@ const fitToBox = (e:any,item: any, i: number) => {
 }
 // 双击模型
 const clickMesh = (e: any, item: any, i: number) => {
-  const {object} = e
-  transformRef.value = object || item.el
   config.currentIndex = i
-  transformControlsState.enabled = true
   emits('click', {
-    ref: transformRef.value,
-    config: componentList[i],
+    item: componentList[i],
     e: e
   })
 }

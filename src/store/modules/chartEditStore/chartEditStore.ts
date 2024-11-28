@@ -201,8 +201,11 @@ export const useChartEditStore = defineStore({
     },
     // 鼠标选中的元素
     transformRef: null,
+
     //整个画布ref
     canvasRefs: null,
+    //组件列表ref
+    componentListRef: [],
     // 图表数组（需存储给后端）
     componentList: []
   }),
@@ -245,6 +248,9 @@ export const useChartEditStore = defineStore({
     },
     getCanvasRefs() {
       return this.canvasRefs
+    },
+    getComponentListRef() {
+      return this.componentListRef
     }
   },
   actions: {
@@ -282,6 +288,10 @@ export const useChartEditStore = defineStore({
     // * 设置 editCanvas 数据项
     setEditCanvas<T extends keyof EditCanvasType, K extends EditCanvasType[T]>(key: T, value: K) {
       this.editCanvas[key] = value
+    },
+    //设置组件列表ref
+    setComponentListRef(data: any) {
+      this.componentListRef = data
     },
     // * 设置 editCanvasConfig（需保存后端） 数据项
     setEditCanvasConfig<T extends keyof EditCanvasConfigType, K extends EditCanvasConfigType[T]>(key: T, value: K) {

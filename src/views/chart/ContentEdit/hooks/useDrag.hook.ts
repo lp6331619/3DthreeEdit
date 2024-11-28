@@ -12,7 +12,8 @@ import { storeToRefs } from 'pinia'
 import { Raycaster, Vector2, Vector3, Plane } from 'three'
 
 const chartEditStore = useChartEditStore()
-const { canvasRefs } = storeToRefs(chartEditStore)
+const { transformRef, canvasRefs } = storeToRefs(chartEditStore)
+const transformControlsState = chartEditStore.getTransformControlsState
 const { onClickOutSide } = useContextMenu()
 const raycaster = new Raycaster()
 const mouse = new Vector2()
@@ -69,21 +70,14 @@ export const dragHandle = async (e: DragEvent, contentBoxRef: any) => {
 }
 // 3d点击事件
 export const TresCanvaClick = async (obj: any) => {
-  const { config, e, ref } = obj
+  const { item, e } = obj
+  const { object } = e
+  transformRef.value = object || item.el
+  transformControlsState.enabled = true
   onClickOutSide()
   // 若此时按下了 CTRL, 表示多选
-  if (!config.id) return
-  const id = config.id
-  if (e.buttons === MouseEventButton.LEFT && window.$KeyboardActive?.ctrl) {
-    // 若已选中，则去除
-    if (chartEditStore.targetChart.selectId.includes(id)) {
-      const exList = chartEditStore.targetChart.selectId.filter(e => e !== id)
-      chartEditStore.setTargetSelectChart(exList)
-    } else {
-      chartEditStore.setTargetSelectChart(id, true)
-    }
-    return
-  }
+  if (!item.id) return
+  const id = item.id
   chartEditStore.setTargetSelectChart(id)
 }
 // * 进入拖拽区域
