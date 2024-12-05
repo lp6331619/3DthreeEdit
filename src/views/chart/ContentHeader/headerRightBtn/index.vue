@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed ,nextTick} from 'vue'
 import { renderIcon, goDialog, fetchPathByName, routerTurnByPath, setSessionStorage, getLocalStorage } from '@/utils'
 import { PreviewEnum } from '@/enums/pageEnum'
 import { StorageEnum } from '@/enums/storageEnum'
@@ -23,6 +23,7 @@ import { storeToRefs } from 'pinia'
 
 const { BrowsersOutlineIcon, SendIcon, AnalyticsIcon } = icon.ionicons5
 const chartEditStore = useChartEditStore()
+const editCanvasConfig = chartEditStore.getEditCanvasConfig
 const { canvasRefs  } = storeToRefs(chartEditStore)
 const routerParamsInfo = useRoute()
 
@@ -66,25 +67,23 @@ const sendHandle = () => {
   })
 }
 const saveData = () => {
-//   const canvas = document.querySelector('.tres-canvas-container canvas') as HTMLElement
-  // const gl = canvas.getContext('webgl',{
-  //   preserveDrawingBuffer: true
-  // })
-  // if (!gl) {
-  //   console.error('无法获取 WebGL 上下文');
-  // } else {
-  //   const imgData = canvas.toDataURL('image/png');
-  //   console.log(imgData);
-  // }
-  //   // 进行 WebGL 绘制操作
-  //   // 现在可以安全地调用 toDataURL() 来获取 canvas 的图像
-  //   const imgData = canvas.toDataURL('image/png');
-  //   console.log(imgData);
-  // }
   const { context } = canvasRefs.value
-  const { renderer } = context
-  // const img = renderer.value?.domElement?.toDataURL('image/png')
-  console.log(context,999);
+  const {renderer,scene,camera} = context
+  editCanvasConfig.preserveDrawingBuffer = true
+  renderer.value.render(scene.value, camera.value)
+  renderer.value.resetState()
+  nextTick(()=>{
+    const canvas = document.querySelector('.tres-canvas-container canvas')
+    const img = canvas.toDataURL('image/png');
+    console.log(img,999);
+    setTimeOut(()=>{
+      editCanvasConfig.preserveDrawingBuffer = false
+      renderer.value.render(scene.value, camera.value)
+      renderer.value.resetState()
+    },1000)
+  })
+
+  
 }
 const btnList = [
   // {

@@ -5,8 +5,7 @@ import { PageEnum } from '@/enums/pageEnum'
 const importPath = {
   'PageEnum.BASE_HOME_NAME': () => import('@/views/project/index.vue'),
   'PageEnum.BASE_HOME_ITEMS_NAME': () => import('@/views/project/items/index.vue'),
-  'PageEnum.BASE_HOME_TEMPLATE_NAME': () => import('@/views/project/mtTemplate/index.vue'),
-  'PageEnum.BASE_HOME_TEMPLATE_MARKET_NAME': () => import('@/views/project/templateMarket/index.vue')
+  'PageEnum.BASE_HOME_TEMPLATE_NAME': () => import('@/views/project/mtTemplate/index.vue')
 }
 
 const projectRoutes: RouteRecordRaw = {
@@ -33,14 +32,6 @@ const projectRoutes: RouteRecordRaw = {
       component: importPath['PageEnum.BASE_HOME_TEMPLATE_NAME'],
       meta: {
         title: '我的模板'
-      }
-    },
-    {
-      path: PageEnum.BASE_HOME_TEMPLATE_MARKET,
-      name: PageEnum.BASE_HOME_TEMPLATE_MARKET_NAME,
-      component: importPath['PageEnum.BASE_HOME_TEMPLATE_MARKET_NAME'],
-      meta: {
-        title: '模板市场'
       }
     }
   ]

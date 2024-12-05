@@ -308,6 +308,7 @@ onMounted(() => {
         canvasRefs.value = TresCanvasRef.value
         const {context} = canvasRefs.value
         const {renderer} = context
+        // renderer.value.autoClear = false
         console.log(context,renderer,999);
       }
     })

@@ -124,7 +124,8 @@ export const useChartEditStore = defineStore({
       alpha: false,
       shadowMapType: BasicShadowMap,
       outputColorSpace: SRGBColorSpace,
-      toneMapping: NoToneMapping
+      toneMapping: NoToneMapping,
+      preserveDrawingBuffer: false
     },
     // 数据请求处理（需存储给后端）
     requestGlobalConfig: {
