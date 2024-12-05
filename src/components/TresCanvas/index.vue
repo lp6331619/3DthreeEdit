@@ -25,7 +25,7 @@
     />
     <!-- 灯光 -->
     <component v-for="(item,i) in config.lightSetting" :key="i" ref="lightRef" :is="item.type" v-bind="item.config" />
-    <TresGroup v-for="(subMesh, index) in config.componentList" :key="subMesh.key" >
+    <TresGroup v-for="(subMesh, index) in config.componentList"  >
       <!-- 添加的mesh对象 -->
       <TresMesh
         v-if="subMesh.type == 'TresMesh' && !subMesh.status.hide"
@@ -34,6 +34,7 @@
         cast-shadow 
         :name="subMesh.id + index"
         :onlyId="subMesh.id"
+        :key="subMesh.key"
         @pointer-enter="onPointerEnter($event)"
         @pointer-leave="onPointerLeave($event)"
         @double-click="fitToBox($event,subMesh,index)"
@@ -50,7 +51,7 @@
         :position="subMesh.option?.position || [0, 0, 0] "
         :ref="(el)=> subMesh.el=el "
         >
-        <Html v-bind="htmlState">
+        <Html v-bind="htmlState" :key="subMesh.key">
           <component
             class="edit-content-chart"
             :class="animationsClass(subMesh.styles.animations)"
@@ -71,6 +72,7 @@
       <Suspense  v-else-if="subMesh.type == 'GLTFModel' && !subMesh.status.hide">
         <TresGroup  :ref="(el)=> subMesh.el=el " v-bind="subMesh.option">
           <GLTFModel 
+          :key="subMesh.key"
             @context-menu="fitToBox($event,subMesh,index)" 
             @pointer-down="clickMesh($event,subMesh,index)"  
             @pointer-enter="onPointerEnter($event)"
@@ -78,8 +80,8 @@
             :path="subMesh.meshConfig" />
         </TresGroup>
       </Suspense>
-      <Sky v-else-if="subMesh.type == 'Sky' && !subMesh.status.hide" v-bind="subMesh.option"  />
-      <Stars v-else-if="subMesh.type == 'Stars' && !subMesh.status.hide" v-bind="subMesh.option" />
+      <Sky :key="subMesh.key" v-else-if="subMesh.type == 'Sky' && !subMesh.status.hide" v-bind="subMesh.option"  />
+      <Stars :key="subMesh.key" v-else-if="subMesh.type == 'Stars' && !subMesh.status.hide" v-bind="subMesh.option" />
     </TresGroup>
     <!-- 变换控制器 -->
     <TransformControls v-if="transformControlsState.enabled" :object="transformRef" v-bind="transformControlsState" 
@@ -111,6 +113,8 @@ const ModelLoad = defineAsyncComponent(() => import('@/components/ModelLoad/inde
 const Effect = defineAsyncComponent(() => import('./effect.vue'));
 const chartEditStore = useChartEditStore()
 const { transformRef,canvasRefs  } = storeToRefs(chartEditStore)
+
+
 // 模型配置
 const componentList = chartEditStore.getComponentList
 // 画布配置
@@ -302,10 +306,18 @@ onMounted(() => {
     nextTick(() => {
       if(TresCanvasRef.value){
         canvasRefs.value = TresCanvasRef.value
+        const {context} = canvasRefs.value
+        const {renderer} = context
+        console.log(context,renderer,999);
       }
     })
-  }, 1000)
+  }, 500)
 })
+
+
+
+
+
 
 </script>
 

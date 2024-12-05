@@ -110,6 +110,9 @@ watch(
   () => reverseList.value,
   newValue => {
     layerList.value = newValue
+  },{
+    deep:true,
+    immediate:true
   }
 )
 

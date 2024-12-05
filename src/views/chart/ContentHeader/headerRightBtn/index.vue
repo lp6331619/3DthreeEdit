@@ -1,6 +1,6 @@
 <template>
   <n-space class="go-mt-0" :wrap="false">
-    <n-button v-for="item in comBtnList" :key="item.title" :type="item.type" ghost @click="item.event">
+    <n-button v-for="item in btnList" :key="item.title" :type="item.type" ghost @click="item.event">
       <template #icon>
         <component :is="item.icon"></component>
       </template>
@@ -19,10 +19,11 @@ import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore
 import { syncData } from '../../ContentEdit/components/EditTools/hooks/useSyncUpdate.hook'
 import { icon } from '@/plugins'
 import { cloneDeep } from 'lodash'
+import { storeToRefs } from 'pinia'
 
 const { BrowsersOutlineIcon, SendIcon, AnalyticsIcon } = icon.ionicons5
 const chartEditStore = useChartEditStore()
-
+const { canvasRefs  } = storeToRefs(chartEditStore)
 const routerParamsInfo = useRoute()
 
 // 预览
@@ -64,14 +65,41 @@ const sendHandle = () => {
     onPositiveCallback: () => { }
   })
 }
-
+const saveData = () => {
+//   const canvas = document.querySelector('.tres-canvas-container canvas') as HTMLElement
+  // const gl = canvas.getContext('webgl',{
+  //   preserveDrawingBuffer: true
+  // })
+  // if (!gl) {
+  //   console.error('无法获取 WebGL 上下文');
+  // } else {
+  //   const imgData = canvas.toDataURL('image/png');
+  //   console.log(imgData);
+  // }
+  //   // 进行 WebGL 绘制操作
+  //   // 现在可以安全地调用 toDataURL() 来获取 canvas 的图像
+  //   const imgData = canvas.toDataURL('image/png');
+  //   console.log(imgData);
+  // }
+  const { context } = canvasRefs.value
+  const { renderer } = context
+  // const img = renderer.value?.domElement?.toDataURL('image/png')
+  console.log(context,999);
+}
 const btnList = [
-  {
+  // {
+  //   select: true,
+  //   title: '同步内容',
+  //   type: 'primary',
+  //   icon: renderIcon(AnalyticsIcon),
+  //   event: syncData
+  // },
+   {
     select: true,
-    title: '同步内容',
+    title: '保存',
     type: 'primary',
     icon: renderIcon(AnalyticsIcon),
-    event: syncData
+    event: saveData
   },
   {
     select: true,

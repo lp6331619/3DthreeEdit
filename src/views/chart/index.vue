@@ -31,12 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import { loadAsyncComponent } from '@/utils'
+import {nextTick } from 'vue'
 import { LayoutHeaderPro } from '@/layout/components/LayoutHeaderPro'
 import { useContextMenu } from './hooks/useContextMenu.hook'
 import { useChartEditStore } from '@/store/modules/chartEditStore/chartEditStore'
 import { useChartHistoryStore } from '@/store/modules/chartHistoryStore/chartHistoryStore'
-
+import { initData } from './index'
+import { componentInstall ,loadAsyncComponent} from '@/utils'
+import { fetchConfigComponent, fetchChartComponent } from '@/packages/index'
 const chartHistoryStoreStore = useChartHistoryStore()
 const chartEditStore = useChartEditStore()
 
@@ -50,7 +52,13 @@ const ContentLayers = loadAsyncComponent(() => import('./ContentLayers/index.vue
 const ContentCharts = loadAsyncComponent(() => import('./ContentCharts/index.vue'))
 const ContentConfigurations = loadAsyncComponent(() => import('./ContentConfigurations/index.vue'))
 const ContentLoad = loadAsyncComponent(() => import('./ContentLoad/index.vue'))
-
+chartEditStore.addComponentList(initData as any)
+nextTick(() => {
+  initData.map((item: any) => {
+    componentInstall(item.chartConfig.chartKey, fetchChartComponent(item.chartConfig))
+    componentInstall(item.chartConfig.conKey, fetchConfigComponent(item.chartConfig))
+  })
+})
 // 右键
 const {
   menuOptions,

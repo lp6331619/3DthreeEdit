@@ -10,7 +10,7 @@
       ></n-image>
       <n-ellipsis style="margin-right: auto">
         <span class="list-text">
-          {{ props.componentData.chartConfig.title }}
+          {{ props.componentData.chartConfig?.title }}
         </span>
       </n-ellipsis>
       <layers-status :isGroup="isGroup" :hover="hover" :status="status"></layers-status>
